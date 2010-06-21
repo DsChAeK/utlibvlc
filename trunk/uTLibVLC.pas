@@ -1098,11 +1098,6 @@ var
   i : Integer;
 //  Pevent_manager : Plibvlc_event_manager_t;
 begin
-//  if Assigned(FMedia) then
-//    libvlc_media_release(FMedia);
-
-//  if Assigned(FPlayer) then
-//    libvlc_media_player_release(FPlayer);
 
   if not Assigned(FMedia) then begin
     if FileExists(Trim(FMediaURL)) then
@@ -1359,8 +1354,6 @@ begin
   // media
   FMediaURL := MediaURL;
   FMediaOpt := MediaOptions;
-
-  // wird in Play() jedesmal neu erzeugt, notwendig???
 end;
 
 function TLibVLC.VLC_GetVersion: String;
