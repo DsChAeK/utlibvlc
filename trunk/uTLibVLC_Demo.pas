@@ -24,26 +24,6 @@
 //
 // ##############################################################################################
 
-(*
- Erkentnisse:
- -media_player muß released werden, damit schwarzer screen bei stopp kommt
- -zwischen base und play start sollte ein delay eingefügt, was der caching Zeit entspricht werden
- -media_add_option ist nur für eine option gedacht :)
- -deinterlace funktioniert über media_add_option
-
- Bugs:
- -libvlc_video_set_mouse_input(FPlayer, 0) funkioniert nicht richtig!!!
- -event_attach macht bei callback probleme und programm stürzt ab
- -libvlc_video_set_deinterlace() hat keine Auswirkung
- -Menüaufrufe über der Videofläche funktionieren nicht
-
- ToDo:
- -was passiert bei stream abbruch -> bisher kein Problem
- -mehrere vlc instanzen ausgeben auf display
- -transkodieren in client/vlc online modus
- -aufnahme
-*)
-
 unit uTLibVLC_Demo;
 
 interface
