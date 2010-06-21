@@ -1,13 +1,13 @@
 // ##############################################################################################
 //   Author:        DsChAeK
 //   URL:           http://www.dschaek.de
-//   Projekt:       uTLibvlc
+//   Projekt:       uTLibVLC
 //   Lizenz:        Freeware
 //   Version:       1.0
 //
 //   Aufgabe:       Wrapper for LibVLC v1.1 (or higher)
 //
-//   Info:          based on code from TheUnknownOnes (THX!)
+//   Info:          based on some code from TheUnknownOnes (good work!)
 //
 //   Lizenz:        Copyright (c) 2009, DsChAeK
 //
@@ -30,7 +30,7 @@
 //       -adaptions for LibVLC v1.1
 //       -replaced ILibVLC through TLibVLC, each object loads its own libvlc.dll!
 //        ->not so many locations to adapt if a function changes
-//        ->libvlc functions and own functions like e.g. VLC_Play() handled in one class
+//        ->libvlc functions and own functions like e.g. VLC_Play() are handled in one class
 //       -support of registered/custom vlc path, no need to copy vlc files into the app folder
 //       -removed version check
 //       -libvlc_vprinterr/libvlc_printerr not implemented, delphi don't handle var_args by default and no need
@@ -43,7 +43,7 @@
   {$MODE Delphi}
 {$ENDIF}
 
-unit uTLibvlc;
+unit uTLibVLC;
 
 interface
 
@@ -398,6 +398,7 @@ type
 
       function  SetAParent(hWndChild, hWndNewParent: HWND; NewParentWidth, NewParentHeight: integer): boolean;
     public
+      // public functions
       constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; MediaURL: String; MediaOptions : TStringList; PnlOutput : TPanel; Callback : libvlc_callback_t); overload;
       constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; PnlOutput : TPanel; Callback : libvlc_callback_t); overload;
       destructor  Destroy(); override;
@@ -1103,8 +1104,12 @@ begin
 //  if Assigned(FPlayer) then
 //    libvlc_media_player_release(FPlayer);
 
-  if not Assigned(FMedia) then
-    FMedia := libvlc_media_new_location(FLib, PAnsiChar(AnsiString(FMediaURL)));
+  if not Assigned(FMedia) then begin
+    if FileExists(Trim(FMediaURL)) then
+      FMedia := libvlc_media_new_path(FLib, PAnsiChar(AnsiString(Trim(FMediaURL))))
+    else
+      FMedia := libvlc_media_new_location(FLib, PAnsiChar(AnsiString(Trim(FMediaURL))));
+  end;
 
   for i := 0 to FMediaOpt.Count-1 do begin
     libvlc_media_add_option(FMedia, PChar(FMediaOpt.Strings[i]));
