@@ -397,16 +397,18 @@ type
       procedure LoadFunctions;
 
       function  SetAParent(hWndChild, hWndNewParent: HWND; NewParentWidth, NewParentHeight: integer): boolean;
+
     public
       // public functions
-      constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; MediaURL: String; MediaOptions : TStringList; PnlOutput : TPanel; Callback : libvlc_callback_t); overload;
       constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; PnlOutput : TPanel; Callback : libvlc_callback_t); overload;
       destructor  Destroy(); override;
 
       function  VLC_GetLibPath : String;
       function  VLC_GetVersion() : String;
 
-      procedure VLC_SetPlayer(MediaURL: String; MediaOptions : TStringList);
+      procedure VLC_PlayMedia(MediaURL: String; MediaOptions : TStringList);
+      procedure VLC_StopMedia();
+
       procedure VLC_Play();
       procedure VLC_Stop();
       procedure VLC_Pause();
@@ -643,46 +645,46 @@ type
       libvlc_audio_output_device_count : function(p_instance : Plibvlc_instance_t;
                                                   psz_audio_output : PAnsiChar) : Integer; cdecl;
       libvlc_audio_output_device_longname : function(p_instance : Plibvlc_instance_t;
-                                                      psz_audio_output : PAnsiChar;
-                                                      device : Integer) : PAnsiChar; cdecl;
+                                                     psz_audio_output : PAnsiChar;
+                                                     device : Integer) : PAnsiChar; cdecl;
       libvlc_audio_output_device_id : function(p_instance : Plibvlc_instance_t;
-                                                psz_audio_output : PAnsiChar;
-                                                device : Integer) : PAnsiChar; cdecl;
+                                               psz_audio_output : PAnsiChar;
+                                               device : Integer) : PAnsiChar; cdecl;
       libvlc_audio_output_device_set : procedure(p_media_player : Plibvlc_media_player_t;
-                                                  psz_audio_output : PAnsiChar;
-                                                  device : PAnsiChar); cdecl;
+                                                 psz_audio_output : PAnsiChar;
+                                                 device : PAnsiChar); cdecl;
       libvlc_audio_output_get_device_type : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
       libvlc_audio_output_set_device_type : procedure(p_media_player : Plibvlc_media_player_t;
-                                                       device_type : Integer); cdecl;
+                                                      device_type : Integer); cdecl;
       libvlc_audio_toggle_mute : procedure(p_media_player : Plibvlc_media_player_t); cdecl;
       libvlc_audio_get_mute : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
       libvlc_audio_set_mute : procedure(p_media_player : Plibvlc_media_player_t;
-                                         status : Integer); cdecl;
+                                        status : Integer); cdecl;
       libvlc_audio_get_volume : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
       libvlc_audio_set_volume : function(p_media_player : Plibvlc_media_player_t;
-                                          volume : Integer) : Integer; cdecl;
+                                         volume : Integer) : Integer; cdecl;
       libvlc_audio_get_track_count : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
       libvlc_audio_get_track_description : function(p_media_player : Plibvlc_media_player_t) : Plibvlc_track_description_t; cdecl;
       libvlc_audio_get_track : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
       libvlc_audio_set_track : procedure(p_media_player : Plibvlc_media_player_t; i_track : Integer); cdecl;
       libvlc_audio_get_channel : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
       libvlc_audio_set_channel : procedure(p_media_player : Plibvlc_media_player_t;
-                                            channel : Integer); cdecl;
+                                           channel : Integer); cdecl;
 
       libvlc_media_list_player_new : function(p_instance : Plibvlc_instance_t) : Plibvlc_media_list_player_t; cdecl;
       libvlc_media_list_player_release : procedure(p_mlp : Plibvlc_media_list_player_t); cdecl;
       libvlc_media_list_player_set_media_player : procedure(p_mlp : Plibvlc_media_list_player_t;
-                                                             p_media_player : Plibvlc_media_player_t); cdecl;
+                                                            p_media_player : Plibvlc_media_player_t); cdecl;
       libvlc_media_list_player_set_media_list : procedure(p_mlp : Plibvlc_media_list_player_t;
-                                                           p_media_list : Plibvlc_media_list_t); cdecl;
+                                                          p_media_list : Plibvlc_media_list_t); cdecl;
       libvlc_media_list_player_play : procedure(p_mlp : Plibvlc_media_list_player_t); cdecl;
       libvlc_media_list_player_pause : procedure(p_mlp : Plibvlc_media_list_player_t); cdecl;
       libvlc_media_list_player_is_playing : function(p_mlp : Plibvlc_media_list_player_t) : Integer; cdecl;
       libvlc_media_list_player_get_state : function(p_mlp : Plibvlc_media_list_player_t) : libvlc_state_t; cdecl;
       libvlc_media_list_player_play_item_at_index : procedure(p_mlp : Plibvlc_media_list_player_t;
-                                                               i_index : Integer); cdecl;
+                                                              i_index : Integer); cdecl;
       libvlc_media_list_player_play_item : procedure(p_mlp : Plibvlc_media_list_player_t;
-                                                      p_media : Plibvlc_media_t); cdecl;
+                                                     p_media : Plibvlc_media_t); cdecl;
       libvlc_media_list_player_stop : procedure(p_mlp : Plibvlc_media_list_player_t); cdecl;
       libvlc_media_list_player_next : procedure(p_mlp : Plibvlc_media_list_player_t); cdecl;
 
@@ -696,80 +698,82 @@ type
 
       libvlc_vlm_release : procedure(p_instance : Plibvlc_instance_t); cdecl;
       libvlc_vlm_add_broadcast : procedure(p_instance : Plibvlc_instance_t;
-                                            psz_name,
-                                            psz_input,
-                                            psz_output : PAnsiChar;
-                                            options : Integer;
-                                            ppsz_options : Pointer;
-                                            b_enabled : Integer;
-                                            b_loop : Integer); cdecl;
-      libvlc_vlm_add_vod : procedure(p_instance : Plibvlc_instance_t;
-                                      psz_name,
-                                      psz_input : PAnsiChar;
-                                      i_options : Integer;
-                                      ppsz_options : Pointer;
-                                      b_enabled : Integer;
-                                      psz_mux : PAnsiChar); cdecl;
-      libvlc_vlm_del_media : procedure(p_instance : Plibvlc_instance_t;
-                                        psz_name : PAnsiChar); cdecl;
-      libvlc_vlm_set_enabled : procedure(p_instance : Plibvlc_instance_t;
-                                          psz_name : PAnsiChar;
-                                          b_enabled : Integer); cdecl;
-      libvlc_vlm_set_output : procedure(p_instance : Plibvlc_instance_t;
-                                         psz_name : PAnsiChar;
-                                         psz_output : PAnsiChar); cdecl;
-      libvlc_vlm_set_input : procedure(p_instance : Plibvlc_instance_t;
-                                        psz_name : PAnsiChar;
-                                        psz_input : PAnsiChar); cdecl;
-      libvlc_vlm_add_input : procedure(p_instance : Plibvlc_instance_t;
-                                        psz_name : PAnsiChar;
-                                        pst_input : PAnsiChar); cdecl;
-      libvlc_vlm_set_loop : procedure(p_instance : Plibvlc_instance_t;
-                                       psz_name : PAnsiChar;
-                                       b_loop : Integer); cdecl;
-      libvlc_vlm_set_mux : procedure(p_instance : Plibvlc_instance_t;
-                                      psz_name : PAnsiChar;
-                                      psz_mux : PAnsiChar); cdecl;
-      libvlc_vlm_change_media : procedure(p_instance : Plibvlc_instance_t;
                                            psz_name,
                                            psz_input,
                                            psz_output : PAnsiChar;
-                                           i_options : Integer;
+                                           options : Integer;
                                            ppsz_options : Pointer;
                                            b_enabled : Integer;
                                            b_loop : Integer); cdecl;
-      libvlc_vlm_play_media : procedure(p_instance : Plibvlc_instance_t;
-                                         psz_name : PAnsiChar); cdecl;
-      libvlc_vlm_stop_media : procedure(p_instance : Plibvlc_instance_t;
-                                         psz_name : PAnsiChar); cdecl;
-      libvlc_vlm_pause_media : procedure(p_instance : Plibvlc_instance_t;
-                                          psz_name : PAnsiChar); cdecl;
-      libvlc_vlm_seek_media : procedure(p_instance : Plibvlc_instance_t;
+      libvlc_vlm_add_vod : procedure(p_instance : Plibvlc_instance_t;
+                                     psz_name,
+                                     psz_input : PAnsiChar;
+                                     i_options : Integer;
+                                     ppsz_options : Pointer;
+                                     b_enabled : Integer;
+                                     psz_mux : PAnsiChar); cdecl;
+      libvlc_vlm_del_media : procedure(p_instance : Plibvlc_instance_t;
+                                       psz_name : PAnsiChar); cdecl;
+      libvlc_vlm_set_enabled : procedure(p_instance : Plibvlc_instance_t;
                                          psz_name : PAnsiChar;
-                                         f_percentage : Single); cdecl;
+                                         b_enabled : Integer); cdecl;
+      libvlc_vlm_set_output : procedure(p_instance : Plibvlc_instance_t;
+                                        psz_name : PAnsiChar;
+                                        psz_output : PAnsiChar); cdecl;
+      libvlc_vlm_set_input : procedure(p_instance : Plibvlc_instance_t;
+                                       psz_name : PAnsiChar;
+                                       psz_input : PAnsiChar); cdecl;
+      libvlc_vlm_add_input : procedure(p_instance : Plibvlc_instance_t;
+                                       psz_name : PAnsiChar;
+                                       pst_input : PAnsiChar); cdecl;
+      libvlc_vlm_set_loop : procedure(p_instance : Plibvlc_instance_t;
+                                      psz_name : PAnsiChar;
+                                      b_loop : Integer); cdecl;
+      libvlc_vlm_set_mux : procedure(p_instance : Plibvlc_instance_t;
+                                     psz_name : PAnsiChar;
+                                     psz_mux : PAnsiChar); cdecl;
+      libvlc_vlm_change_media : procedure(p_instance : Plibvlc_instance_t;
+                                          psz_name,
+                                          psz_input,
+                                          psz_output : PAnsiChar;
+                                          i_options : Integer;
+                                          ppsz_options : Pointer;
+                                          b_enabled : Integer;
+                                          b_loop : Integer); cdecl;
+      libvlc_vlm_play_media : procedure(p_instance : Plibvlc_instance_t;
+                                        psz_name : PAnsiChar); cdecl;
+      libvlc_vlm_stop_media : procedure(p_instance : Plibvlc_instance_t;
+                                        psz_name : PAnsiChar); cdecl;
+      libvlc_vlm_pause_media : procedure(p_instance : Plibvlc_instance_t;
+                                         psz_name : PAnsiChar); cdecl;
+      libvlc_vlm_seek_media : procedure(p_instance : Plibvlc_instance_t;
+                                        psz_name : PAnsiChar;
+                                        f_percentage : Single); cdecl;
       libvlc_vlm_show_media : function(p_instance : Plibvlc_instance_t;
-                                        psz_name : PAnsiChar) : PAnsiChar; cdecl;
+                                       psz_name : PAnsiChar) : PAnsiChar; cdecl;
       libvlc_vlm_get_media_instance_position : function(p_instance : Plibvlc_instance_t;
-                                                         psz_name : PAnsiChar;
-                                                         i_instance : Integer) : Single; cdecl;
+                                                        psz_name : PAnsiChar;
+                                                        i_instance : Integer) : Single; cdecl;
       libvlc_vlm_get_media_instance_time : function(p_instance : Plibvlc_instance_t;
+                                                    psz_name : PAnsiChar;
+                                                    i_instance : Integer) : Integer; cdecl;
+      libvlc_vlm_get_media_instance_length : function(p_instance : Plibvlc_instance_t;
+                                                      psz_name : PAnsiChar;
+                                                      i_instance : Integer) : Integer; cdecl;
+      libvlc_vlm_get_media_instance_rate : function(p_instance : Plibvlc_instance_t;
+                                                    psz_name : PAnsiChar;
+                                                    i_instance : Integer) : Integer; cdecl;
+(*
+      libvlc_vlm_get_media_instance_title : function(p_instance : Plibvlc_instance_t;
                                                      psz_name : PAnsiChar;
                                                      i_instance : Integer) : Integer; cdecl;
-      libvlc_vlm_get_media_instance_length : function(p_instance : Plibvlc_instance_t;
+      libvlc_vlm_get_media_instance_chapter : function(p_instance : Plibvlc_instance_t;
                                                        psz_name : PAnsiChar;
                                                        i_instance : Integer) : Integer; cdecl;
-      libvlc_vlm_get_media_instance_rate : function(p_instance : Plibvlc_instance_t;
-                                                     psz_name : PAnsiChar;
-                                                     i_instance : Integer) : Integer; cdecl;
-//      libvlc_vlm_get_media_instance_title : function(p_instance : Plibvlc_instance_t;
-//                                                      psz_name : PAnsiChar;
-//                                                      i_instance : Integer) : Integer; cdecl;
-//      libvlc_vlm_get_media_instance_chapter : function(p_instance : Plibvlc_instance_t;
-//                                                        psz_name : PAnsiChar;
-//                                                        i_instance : Integer) : Integer; cdecl;
-//      libvlc_vlm_get_media_instance_seekable : function(p_instance : Plibvlc_instance_t;
-//                                                         psz_name : PAnsiChar;
-//                                                         i_instance : Integer) : Integer; cdecl;
+      libvlc_vlm_get_media_instance_seekable : function(p_instance : Plibvlc_instance_t;
+                                                        psz_name : PAnsiChar;
+                                                        i_instance : Integer) : Integer; cdecl;
+                                                        *)
   end;
 
 implementation
@@ -816,51 +820,8 @@ begin
   libvlc_log_clear(FLog);
 end;
 
-constructor TLibVLC.Create(InstName, DLL: String; Params : array of PAnsiChar; LogLevel : Integer; MediaURL: String; MediaOptions : TStringList; PnlOutput : TPanel; Callback : libvlc_callback_t);
-begin
-  if (DLL = '') or (DLL = 'libvlc.dll') then
-    DLL := VLC_GetLibPath+'libvlc.dll';
-
-  // load libvlccore.dll (actually only needed if vlc is in a diffrent folder then the application)
-  FDllHandle := LoadLibrary(PChar(ExtractFilePath(DLL)+'libvlccore.dll'));
-
-  // callback
-  FCallback := Callback;
-
-  // load libvlc.dll
-  FDllHandle := LoadLibrary(PChar(DLL));
-
-  // name
-  FName := InstName;
-
-  // fullscreen
-  FFullscreen := false;
-  FFormFS := TForm.Create(nil);
-  FFormFS.BorderStyle := bsNone;
-  FFormFS.Width := Screen.Width;
-  FFormFS.Height := Screen.Height;
-  FFormFS.Top := 0;
-  FFormFS.Left := 0;
-
-  // media
-  FMediaURL := MediaURL;
-  FMediaOpt := MediaOptions;
-  FPnlOutput := PnlOutput;
-
-  if FDllHandle = 0 then
-    raise Exception.Create('load libvlc.dll failed!');
-
-  LoadFunctions;
-
-  // init libvlc instance
-  FLib := libvlc_new(Length(Params), @Params[0]);
-
-  // init logging
-  libvlc_set_log_verbosity(FLib, LogLevel);
-  FLog := libvlc_log_open(FLib);
-end;
-
 destructor TLibVLC.Destroy;
+// free objects
 begin
   libvlc_log_close(FLog);
   libvlc_release(FLib);
@@ -869,6 +830,7 @@ begin
 end;
 
 procedure TLibVLC.LoadFunctions;
+// get all function pointers
 begin
   GetAProcAddress(@libvlc_playlist_play, 'libvlc_playlist_play');
   GetAProcAddress(@libvlc_errmsg , 'libvlc_errmsg');
@@ -1088,68 +1050,32 @@ begin
 end;
 
 procedure TLibVLC.VLC_Pause;
+// pause media_player
 begin
   if Assigned(FPlayer) then
     libvlc_media_player_pause(FPlayer);
 end;
 
 procedure TLibVLC.VLC_Play;
-var
-  i : Integer;
-//  Pevent_manager : Plibvlc_event_manager_t;
+// play media_player
 begin
-
-  if not Assigned(FMedia) then begin
-    if FileExists(Trim(FMediaURL)) then
-      FMedia := libvlc_media_new_path(FLib, PAnsiChar(AnsiString(Trim(FMediaURL))))
-    else
-      FMedia := libvlc_media_new_location(FLib, PAnsiChar(AnsiString(Trim(FMediaURL))));
-  end;
-
-  for i := 0 to FMediaOpt.Count-1 do begin
-    libvlc_media_add_option(FMedia, PChar(FMediaOpt.Strings[i]));
-  end;
-
   if not Assigned(FPlayer) then
-    FPlayer := libvlc_media_player_new_from_media(FMedia);
+    exit;
 
-//  libvlc_media_release(FMedia); // could be released, but needed for VLC_GetStats()
-
-  if Assigned(FPnlOutput) then
-    libvlc_media_player_set_hwnd(FPlayer, Pointer(FPnlOutput.Handle));
-
-//  libvlc_video_set_mouse_input(FPlayer, 0);
-//  VLC.Lib.libvlc_video_set_key_input(FPlayer, 1);
-           
-  // Events
-(*  Pevent_manager := libvlc_media_player_event_manager(FPlayer);
-  libvlc_event_attach(Pevent_manager,
-                      libvlc_MediaPlayerPlaying,
-                      FCallback,
-                      Pointer(Self));
-  *)
-  
   libvlc_media_player_play(FPlayer);
 end;
 
 procedure TLibVLC.VLC_Stop;
+// stop media_player
 begin
   if not Assigned(FPlayer) then
     exit;
 
   libvlc_media_player_stop(FPlayer);
-  Delay(300); // stopping time, too fast is not good
-
-  // media_player muﬂ freigegeben werden, damit Panel schwarz wird!!!
-//  libvlc_media_player_release(FPlayer);
-//  FPlayer := nil;
-
-  // damit neu initialisiert werden kann
-//  libvlc_media_release(FMedia);
-//  FMedia := nil;
 end;
 
 procedure TLibVLC.VLC_ToggleFullscreen(Panel: TPanel);
+// toggle fullscreen
 begin
   if not Assigned(FPnlOutput) then
     exit;
@@ -1187,6 +1113,7 @@ begin
 end;
 
 function TLibVLC.GetAProcAddress(var Addr: Pointer; Name: PChar): Integer;
+// get function pointer to a dll function
 begin
   Addr := GetProcAddress(FDLLHandle, Name);
 
@@ -1200,6 +1127,7 @@ begin
 end;
 
 function TLibVLC.VLC_GetStats: libvlc_media_stats_t;
+// get media stats like "lostbuffers"
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1211,6 +1139,7 @@ begin
 end;
 
 function TLibVLC.SetAParent(hWndChild, hWndNewParent: HWND; NewParentWidth, NewParentHeight: integer): boolean;
+// change parent window
 var
   hWndPrevParent: HWND;
 begin
@@ -1223,6 +1152,7 @@ begin
 end;
 
 procedure TLibVLC.VLC_SetAudioTrack(iTrack: Integer);
+// set audio track
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1231,6 +1161,7 @@ begin
 end;
 
 function TLibVLC.VLC_GetAudioTrack: Integer;
+// get current audio track
 begin
   Result := -1;
 
@@ -1241,6 +1172,7 @@ begin
 end;
 
 procedure TLibVLC.VLC_TakeSnapshot(Path: String; width, height : Integer);
+// take a snapshot
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1252,6 +1184,7 @@ begin
 end;
 
 procedure TLibVLC.VLC_SetDeinterlaceMode(Mode: String);
+// set video deinterlace mode
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1263,6 +1196,7 @@ begin
 end;
 
 function TLibVLC.VLC_IsPlaying: Boolean;
+// get media_player playing status
 begin
   Result := false;
 
@@ -1276,6 +1210,7 @@ begin
 end;
 
 procedure TLibVLC.VLC_SetCropMode(Mode: String);
+// set video crop mode
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1284,6 +1219,7 @@ begin
 end;
 
 procedure TLibVLC.VLC_SetARMode(Mode: String);
+// set video aspect ratio
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1292,6 +1228,7 @@ begin
 end;
 
 procedure TLibVLC.VLC_ToggleMute;
+// toggle volume
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1300,6 +1237,7 @@ begin
 end;
 
 procedure TLibVLC.VLC_SetVolume (Level : Integer);
+// set volume
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1308,6 +1246,7 @@ begin
 end;
 
 constructor TLibVLC.Create(InstName, DLL: String; Params: array of PAnsiChar; LogLevel: Integer; PnlOutput: TPanel; Callback : libvlc_callback_t);
+// load libvlc.dll, init libvlc and init class, with video output!
 begin
   if (DLL = '') or (DLL = 'libvlc.dll') then
     DLL := VLC_GetLibPath+'libvlc.dll';
@@ -1349,19 +1288,14 @@ begin
   FLog := libvlc_log_open(FLib);
 end;
 
-procedure TLibVLC.VLC_SetPlayer(MediaURL: String; MediaOptions : TStringList);
-begin
-  // media
-  FMediaURL := MediaURL;
-  FMediaOpt := MediaOptions;
-end;
-
 function TLibVLC.VLC_GetVersion: String;
+// get version
 begin
   Result := libvlc_get_version();
 end;
 
 function TLibVLC.VLC_GetVolume: Integer;
+// get volume
 begin
   Result := -1;
 
@@ -1372,6 +1306,7 @@ begin
 end;
 
 function TLibVLC.VLC_GetLibPath: String;
+// get vlc library path
 var
   Handle:HKEY;
   RegType:integer;
@@ -1391,6 +1326,65 @@ begin
     RegCloseKey(Handle);
   end;
 
+end;
+
+procedure TLibVLC.VLC_PlayMedia(MediaURL: String; MediaOptions: TStringList);
+// create new player and new media
+var
+  i : Integer;
+  //  Pevent_manager : Plibvlc_event_manager_t;
+begin
+  // media
+  FMediaURL := MediaURL;
+  FMediaOpt := MediaOptions;
+
+  if not Assigned(FMedia) then begin
+    if FileExists(Trim(FMediaURL)) then
+      FMedia := libvlc_media_new_path(FLib, PAnsiChar(AnsiString(Trim(FMediaURL))))
+    else
+      FMedia := libvlc_media_new_location(FLib, PAnsiChar(AnsiString(Trim(FMediaURL))));
+  end;
+
+  for i := 0 to FMediaOpt.Count-1 do begin
+    libvlc_media_add_option(FMedia, PChar(FMediaOpt.Strings[i]));
+  end;
+
+  if not Assigned(FPlayer) then
+    FPlayer := libvlc_media_player_new_from_media(FMedia);
+
+//  libvlc_media_release(FMedia); // could be released, but needed for VLC_GetStats()
+
+  if Assigned(FPnlOutput) then
+    libvlc_media_player_set_hwnd(FPlayer, Pointer(FPnlOutput.Handle));
+
+//  libvlc_video_set_mouse_input(FPlayer, 0); // mouse still always hidden...
+//  libvlc_video_set_key_input(FPlayer, 1); 
+           
+  // Events
+(*  Pevent_manager := libvlc_media_player_event_manager(FPlayer);
+  libvlc_event_attach(Pevent_manager,
+                      libvlc_MediaPlayerPlaying,
+                      FCallback,
+                      Pointer(Self));
+  *)
+  
+  libvlc_media_player_play(FPlayer);
+end;
+
+procedure TLibVLC.VLC_StopMedia;
+// stop media_player and free player + media
+begin
+  if Assigned(FPlayer) then begin
+    libvlc_media_player_stop(FPlayer);
+
+    libvlc_media_player_release(FPlayer);
+    FPlayer := nil;
+  end;
+
+  if Assigned(FMedia) then begin
+    libvlc_media_release(FMedia);
+    FMedia := nil;
+  end;
 end;
 
 end.
