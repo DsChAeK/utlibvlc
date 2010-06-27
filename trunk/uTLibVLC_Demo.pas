@@ -178,10 +178,10 @@ end;
 procedure TFrmMain.BtnStopClick(Sender: TObject);
 begin
   Memo1.Lines.Append('stop: play');
-  VLC_Play.VLC_Stop;
+  VLC_Play.VLC_StopMedia;
   Memo1.Lines.Append('stop: base');
   if Assigned(VLC_Base) then
-    VLC_Base.VLC_Stop;
+    VLC_Base.VLC_StopMedia;
 end;
 
 procedure TFrmMain.BtnPauseClick(Sender: TObject);
@@ -193,12 +193,12 @@ procedure TFrmMain.BtnPlayClick(Sender: TObject);
 begin
   Memo1.Lines.Append('project: start base');
   if Assigned(VLC_Base) then
-    VLC_Base.VLC_Play;
+    VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
   Memo1.Lines.Append('project: wait 5s...');
   Delay(2000);
 
   Memo1.Lines.Append('project: start play');
-  VLC_Play.VLC_Play;
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
 end;
 
 procedure TFrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -244,9 +244,9 @@ begin
   end;
 
   if FileExists('libvlc.dll') then
-    VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 3, EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil, VlcCallback)
+    VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 3, nil, VlcCallback)
   else
-    VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil, VLCCallback);
+    VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, nil, VLCCallback);
 
   memo1.Lines.Append(VLC_Base.libvlc_get_version);
 end;
@@ -293,9 +293,9 @@ begin
   end;
 
   if FileExists('libvlc.dll') then
-    VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), pan_Video, VlcCallback)
+    VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, pan_Video, VlcCallback)
   else
-    VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 3, EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), pan_Video, VlcCallback);
+    VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 3, pan_Video, VlcCallback);
 
 
 
@@ -365,10 +365,10 @@ begin
   // create libvlc instance
 
   if not Assigned(VLC_Play) then
-    VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, EdtURLBase.Text, TStringList(MmoOptPlay.Lines), pan_Video, VlcCallback);
+    VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, pan_Video, VlcCallback);
 
   Delay(500);
-  VLC_Play.VLC_Play;
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
   
       (*
   // create media from url
@@ -408,12 +408,12 @@ begin
   PrepareAndStart_Play;
 
   Memo1.Lines.Append('project: start base');
-  VLC_Base.VLC_Play;
+  VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
   Memo1.Lines.Append('project: wait 2s...');
   Delay(2000);
 
   Memo1.Lines.Append('project: start play');
-  VLC_Play.VLC_Play;
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
 end;
 
 procedure TFrmMain.BtnStartPlayClick(Sender: TObject);
@@ -656,12 +656,12 @@ begin
   PrepareAndStart_Play;
 
   Memo1.Lines.Append('project: start base');
-  VLC_Base.VLC_Play;
+  VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
   Memo1.Lines.Append('project: wait 2s...');
   Delay(2000);
 
   Memo1.Lines.Append('project: start play');
-  VLC_Play.VLC_Play;
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
 end;
 
 end.
