@@ -80,6 +80,9 @@ type
     Stop21: TMenuItem;
     BtnOpen: TButton;
     DlgOpen: TOpenDialog;
+    Label7: TLabel;
+    EdtDelay: TSpinEdit;
+    Button6: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -107,6 +110,7 @@ type
     procedure Close1Click(Sender: TObject);
     procedure Stop1Click(Sender: TObject);
     procedure BtnOpenClick(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -130,7 +134,8 @@ type
 
     FOnIsPLaying       : TOnIsPlaying;
     FMethodOnIsPlaying : TMethodOnIsPlaying;
-    procedure Delay(msDelay: Integer);
+    procedure Delay(msDelay: DWORD);
+    procedure LogStr(Text : String);
 
     property OnMEvent : libvlc_callback_t read fOnEvents write fOnEvents;
   end;
@@ -166,9 +171,9 @@ begin
     if Assigned(VLC_Play) then
       label1.Caption := 'read_bytes: '+FloatToStr(VLC_Play.VLC_GetStats().i_read_bytes);
     if Assigned(VLC_Base) then
-      VLC_Base.VLC_AppendLastLogMsgs(TStringList(Memo1.Lines));
+      VLC_Base.VLC_AppendLastLogMsgs(TStringList(Memo1.Lines), true);
     if Assigned(VLC_Play) then
-      VLC_Play.VLC_AppendLastLogMsgs(TStringList(Memo1.Lines));
+      VLC_Play.VLC_AppendLastLogMsgs(TStringList(Memo1.Lines), true);
 
   except
     TimerLog.Enabled:=false;
@@ -177,9 +182,9 @@ end;
 
 procedure TFrmMain.BtnStopClick(Sender: TObject);
 begin
-  Memo1.Lines.Append('stop: play');
+  LogStr('stop: play');
   VLC_Play.VLC_StopMedia;
-  Memo1.Lines.Append('stop: base');
+  LogStr('stop: base');
   if Assigned(VLC_Base) then
     VLC_Base.VLC_StopMedia;
 end;
@@ -191,13 +196,13 @@ end;
 
 procedure TFrmMain.BtnPlayClick(Sender: TObject);
 begin
-  Memo1.Lines.Append('project: start base');
+  LogStr('project: start base');
   if Assigned(VLC_Base) then
     VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
-  Memo1.Lines.Append('project: wait 5s...');
-  Delay(2000);
+  LogStr('project: wait '+IntToStr(EdtDelay.Value)+'s...');
+  Delay(EdtDelay.Value);
 
-  Memo1.Lines.Append('project: start play');
+  LogStr('project: start play');
   VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
 end;
 
@@ -248,7 +253,7 @@ begin
   else
     VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, nil, VLCCallback);
 
-  memo1.Lines.Append(VLC_Base.libvlc_get_version);
+  LogStr(VLC_Base.libvlc_get_version);
 end;
 
 procedure TFrmMain.PrepareAndStart_Play;
@@ -402,28 +407,27 @@ procedure TFrmMain.BtnInitClick(Sender: TObject);
 begin
   TimerLog.Enabled := true;
 
-  Memo1.Lines.Append('project: prepare base');
+  LogStr('project: prepare base');
   PrepareAndStart_Base;
-  Memo1.Lines.Append('project: prepare play');
+  LogStr('project: prepare play');
   PrepareAndStart_Play;
 
-  Memo1.Lines.Append('project: start base');
+  LogStr('project: start base');
   VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
-  Memo1.Lines.Append('project: wait 2s...');
-  Delay(2000);
+  LogStr('project: wait '+IntToStr(EdtDelay.Value)+'s...');
 
-  Memo1.Lines.Append('project: start play');
+  Delay(EdtDelay.Value);
+
+  LogStr('project: start play');
   VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
 end;
 
 procedure TFrmMain.BtnStartPlayClick(Sender: TObject);
-var
-  i : Integer;
 begin
   PrepareAndStart_Test;
 end;
 
-procedure TFrmMain.Delay(msDelay: Integer);
+procedure TFrmMain.Delay(msDelay: DWORD);
 var
   Start : DWORD;
 begin
@@ -635,9 +639,9 @@ end;
 
 procedure TFrmMain.Stop1Click(Sender: TObject);
 begin
-  Memo1.Lines.Append('stop: play');
+  LogStr('stop: play');
   VLC_Play.VLC_Stop;
-  Memo1.Lines.Append('stop: base');
+  LogStr('stop: base');
   if Assigned(VLC_Base) then
     VLC_Base.VLC_Stop;
 end;
@@ -650,18 +654,30 @@ begin
 
   TimerLog.Enabled := true;
 
-  Memo1.Lines.Append('project: prepare base');
+  LogStr('project: prepare base');
   PrepareAndStart_Base;
-  Memo1.Lines.Append('project: prepare play');
+  LogStr('project: prepare play');
   PrepareAndStart_Play;
 
-  Memo1.Lines.Append('project: start base');
+  LogStr('project: start base');
   VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
-  Memo1.Lines.Append('project: wait 2s...');
+  LogStr('project: wait 2s...');
   Delay(2000);
 
-  Memo1.Lines.Append('project: start play');
+  LogStr('project: start play');
   VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
+end;
+
+procedure TFrmMain.Button6Click(Sender: TObject);
+begin
+  LogStr('project: start play');
+  PrepareAndStart_Play;
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
+end;
+
+procedure TFrmMain.LogStr(Text: String);
+begin
+  Memo1.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+', '+Text); 
 end;
 
 end.

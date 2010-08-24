@@ -153,12 +153,57 @@ type
                     libvlc_Ended,
                     libvlc_Error);
 
-  const
-    libvlc_media_option_trusted = $2;
-    libvlc_media_option_unique = $100;
+const
+  libvlc_media_option_trusted = $2;
+  libvlc_media_option_unique = $100;
+
+type
+  libvlc_video_marquee_int_option_t = (
+    libvlc_marquee_Enabled,
+    //libvlc_marquee_Text,
+    libvlc_marquee_Color,
+    libvlc_marquee_Opacity,
+    libvlc_marquee_Position,
+    libvlc_marquee_Refresh,
+    libvlc_marquee_Size,
+    libvlc_marquee_Timeout,
+    libvlc_marquee_X,
+    libvlc_marquee_Y
+  );
+
+  libvlc_video_marquee_string_option_t = (
+      libvlc_marquee_Text
+  );
+
+  libvlc_video_logo_option_t = (
+    libvlc_logo_enable,
+    libvlc_logo_file,
+    libvlc_logo_x,
+    libvlc_logo_y,
+    libvlc_logo_delay,
+    libvlc_logo_repeat,
+    libvlc_logo_opacity,
+    libvlc_logo_position
+  );
+
+  libvlc_video_adjust_option_t = (
+    libvlc_adjust_Enable ,
+    libvlc_adjust_Contrast,
+    libvlc_adjust_Brightness,
+    libvlc_adjust_Hue,
+    libvlc_adjust_Saturation,
+    libvlc_adjust_Gamma
+  );
+
+  libvlc_playback_mode_t = (
+    libvlc_playback_mode_default,
+    libvlc_playback_mode_loop,
+    libvlc_playback_mode_repeat
+  );
 
   type
     libvlc_track_type_t = Integer;
+
   const
     libvlc_track_unknown   = -1;
     libvlc_track_audio     = 0;
@@ -426,8 +471,11 @@ type
       procedure VLC_SetVolume(Level : Integer);
       function  VLC_GetVolume() : Integer;
 
-      procedure VLC_AppendLastLogMsgs(List : TStringList);
+      procedure VLC_AppendLastLogMsgs(List : TStringList; DoDateTime : Boolean);
       function  VLC_GetStats() : libvlc_media_stats_t;
+
+      procedure VLC_AdjustVideo(Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
+      procedure VLC_ResetVideo();      
 
       property  IsFullscreen: Boolean read FFullscreen;
       property  MediaURL: String read FMediaURL;
@@ -591,7 +639,19 @@ type
                                          enabled : Integer); cdecl;
       libvlc_get_fullscreen : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
 
-      libvlc_video_set_deinterlace : procedure(p_media_player : Plibvlc_media_player_t; psz_mode : PChar);
+      libvlc_video_set_deinterlace : procedure(p_media_player : Plibvlc_media_player_t; psz_mode : PChar); cdecl;
+      libvlc_video_get_marquee_int: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_int_option_t): Integer; cdecl;
+      libvlc_video_get_marquee_string: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_string_option_t): PAnsiChar; cdecl;
+      libvlc_video_set_marquee_int: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_int_option_t; i_val: Integer); cdecl;
+      libvlc_video_set_marquee_string: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_string_option_t; psz_text: PAnsiChar); cdecl;
+      libvlc_video_get_logo_int: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_logo_option_t): Integer; cdecl;
+      libvlc_video_set_logo_int: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_logo_option_t; value: Integer); cdecl;
+      libvlc_video_set_logo_string: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_logo_option_t; psz_value: PAnsiChar); cdecl;
+      libvlc_video_get_adjust_int: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_adjust_option_t): Integer; cdecl;
+      libvlc_video_set_adjust_int: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_adjust_option_t; value: Integer); cdecl;
+      libvlc_video_get_adjust_float: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_adjust_option_t): Single; cdecl;
+      libvlc_video_set_adjust_float: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_adjust_option_t; value: Single); cdecl;
+
       libvlc_video_set_key_input : procedure(p_media_player : Plibvlc_media_player_t;
                                               Activate : Integer); cdecl;
       libvlc_video_set_mouse_input : procedure(p_media_player : Plibvlc_media_player_t;
@@ -791,7 +851,7 @@ begin
 end;
 
 { TLibVLC }
-procedure TLibVLC.VLC_AppendLastLogMsgs(List: TStringList);
+procedure TLibVLC.VLC_AppendLastLogMsgs(List: TStringList; DoDateTime : Boolean);
 var
   i,Cnt : Integer;
   Msg : libvlc_log_message_t;
@@ -813,8 +873,12 @@ begin
     if not Assigned(@Msg) then
       break;
 
-    if Assigned(List) then
-      List.Append(FName+': '+Msg.psz_message);
+    if Assigned(List) then begin
+      if DoDateTime then
+        List.Append(FormatDateTime('hh:nn:ss:zzz', now)+', '+FName+': '+Msg.psz_message)
+      else
+        List.Append(FName+': '+Msg.psz_message);
+    end;
   end;
 
   libvlc_log_clear(FLog);
@@ -948,6 +1012,19 @@ begin
   GetAProcAddress(@libvlc_set_fullscreen , 'libvlc_set_fullscreen');
   GetAProcAddress(@libvlc_get_fullscreen , 'libvlc_get_fullscreen');
   GetAProcAddress(@libvlc_video_set_deinterlace , 'libvlc_video_set_deinterlace');
+
+  GetAProcAddress(@libvlc_video_get_marquee_int, 'libvlc_video_get_marquee_int');
+  GetAProcAddress(@libvlc_video_get_marquee_string, 'libvlc_video_get_marquee_string');
+  GetAProcAddress(@libvlc_video_set_marquee_int, 'libvlc_video_set_marquee_int');
+  GetAProcAddress(@libvlc_video_set_marquee_string, 'libvlc_video_set_marquee_string');
+  GetAProcAddress(@libvlc_video_get_logo_int, 'libvlc_video_get_logo_int');
+  GetAProcAddress(@libvlc_video_set_logo_int, 'libvlc_video_set_logo_int');
+  GetAProcAddress(@libvlc_video_set_logo_string, 'libvlc_video_set_logo_string');
+  GetAProcAddress(@libvlc_video_get_adjust_int, 'libvlc_video_get_adjust_int');
+  GetAProcAddress(@libvlc_video_set_adjust_int, 'libvlc_video_set_adjust_int');
+  GetAProcAddress(@libvlc_video_get_adjust_float, 'libvlc_video_get_adjust_float');
+  GetAProcAddress(@libvlc_video_set_adjust_float, 'libvlc_video_set_adjust_float');
+
   GetAProcAddress(@libvlc_video_set_key_input , 'libvlc_video_set_key_input');
   GetAProcAddress(@libvlc_video_set_mouse_input , 'libvlc_video_set_mouse_input');
   GetAProcAddress(@libvlc_video_get_size , 'libvlc_video_get_size');
@@ -1384,6 +1461,28 @@ begin
   if Assigned(FMedia) then begin
     libvlc_media_release(FMedia);
     FMedia := nil;
+  end;
+end;
+
+procedure TLibVLC.VLC_AdjustVideo (Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
+// adjust video output
+begin
+  if Assigned(FPlayer) then begin
+    libvlc_video_set_adjust_int(FPlayer, libvlc_adjust_Enable, 1);
+
+    libvlc_video_set_adjust_float(FPlayer, libvlc_adjust_Contrast, Contrast);
+    libvlc_video_set_adjust_float(FPlayer, libvlc_adjust_Brightness, Brightness);
+    libvlc_video_set_adjust_float(FPlayer, libvlc_adjust_Hue, Hue);
+    libvlc_video_set_adjust_float(FPlayer, libvlc_adjust_Saturation, Saturation);
+    libvlc_video_set_adjust_float(FPlayer, libvlc_adjust_Gamma, Gamma);
+  end;
+end;
+
+procedure TLibVLC.VLC_ResetVideo;
+// reset video output to default
+begin
+  if Assigned(FPlayer) then begin
+    libvlc_video_set_adjust_int(FPlayer, libvlc_adjust_Enable, 0);
   end;
 end;
 
