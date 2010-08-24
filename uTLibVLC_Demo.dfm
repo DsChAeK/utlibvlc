@@ -3,8 +3,8 @@ object FrmMain: TFrmMain
   Top = 135
   BorderStyle = bsSingle
   Caption = 'VLC Testsuite'
-  ClientHeight = 491
-  ClientWidth = 843
+  ClientHeight = 500
+  ClientWidth = 846
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,15 +21,15 @@ object FrmMain: TFrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 389
-    Top = 187
+    Left = 390
+    Top = 422
     Width = 64
     Height = 13
     Anchors = [akTop, akRight]
     Caption = 'read_bytes: 0'
   end
   object Label3: TLabel
-    Left = 391
+    Left = 394
     Top = 4
     Width = 63
     Height = 13
@@ -37,8 +37,8 @@ object FrmMain: TFrmMain
     Caption = 'Base Options'
   end
   object Label6: TLabel
-    Left = 391
-    Top = 106
+    Left = 394
+    Top = 208
     Width = 59
     Height = 13
     Anchors = [akTop, akRight]
@@ -47,8 +47,8 @@ object FrmMain: TFrmMain
   object pan_Video: TPanel
     Left = 3
     Top = 2
-    Width = 380
-    Height = 194
+    Width = 383
+    Height = 203
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     Color = clBlack
@@ -56,11 +56,11 @@ object FrmMain: TFrmMain
     OnDblClick = pan_VideoDblClick
   end
   object Panel1: TPanel
-    Left = 0
-    Top = 431
-    Width = 843
-    Height = 60
-    Align = alBottom
+    Left = 2
+    Top = 438
+    Width = 846
+    Height = 62
+    Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 1
     object Label5: TLabel
@@ -69,6 +69,13 @@ object FrmMain: TFrmMain
       Width = 15
       Height = 13
       Caption = 'Vol'
+    end
+    object Label7: TLabel
+      Left = 162
+      Top = 39
+      Width = 27
+      Height = 13
+      Caption = 'Delay'
     end
     object BtnInit: TButton
       Left = 3
@@ -216,42 +223,77 @@ object FrmMain: TFrmMain
       TabOrder = 15
       OnClick = BtnOpenClick
     end
+    object EdtDelay: TSpinEdit
+      Left = 193
+      Top = 35
+      Width = 50
+      Height = 22
+      Increment = 500
+      MaxValue = 10000
+      MinValue = 0
+      TabOrder = 16
+      Value = 2000
+    end
+    object Button6: TButton
+      Left = 354
+      Top = 33
+      Width = 75
+      Height = 27
+      Caption = 'Play Play URL'
+      TabOrder = 17
+      OnClick = Button6Click
+    end
   end
   object MmoOptBase: TMemo
-    Left = 391
+    Left = 394
     Top = 18
     Width = 427
-    Height = 86
+    Height = 187
     Anchors = [akTop, akRight]
     Lines.Strings = (
-      ':sout=#std{access=http,mux=ts,dst=192.168.0.3:31339}'
-      ':no-sout-rtp-sap'
-      ':no-sout-standard-sap'
+      
+        ':sout=#duplicate{dst=std{access=http,mux=ts,dst=192.168.0.3:3133' +
+        '9} :sout-keep'
       ':sout-keep'
       ':sout-all'
-      ':http-caching=1000')
+      ':http-caching=1500'
+      ':high-priority'
+      ':sout-ts-es-id-pid'
+      ':ts-es-id-pid'
+      ':http-reconnect'
+      ':video-title-show=0'
+      ':timeshift-force=1')
     ScrollBars = ssVertical
     TabOrder = 2
   end
   object MmoOptPlay: TMemo
-    Left = 391
-    Top = 120
+    Left = 394
+    Top = 222
     Width = 427
-    Height = 67
+    Height = 193
     Anchors = [akTop, akRight]
     Lines.Strings = (
-      ':http-caching=1000'
       ':deinterlace=1'
-      ':deinterlace-mode=yadif2x')
+      ':deinterlace-mode=blend'
+      ':vout='
+      ':high-priority'
+      ':http-caching=1500'
+      ':aspect-ratio=default'
+      ':crop=default'
+      ':timeshift-granularity=50'
+      ':timeshift-dir=c:\'
+      ':timeshift-force=1'
+      ':http-reconnect'
+      ':no-video-title-show')
     ScrollBars = ssVertical
     TabOrder = 3
   end
   object Panel2: TPanel
     Left = 0
-    Top = 201
-    Width = 843
+    Top = 207
+    Width = 387
     Height = 230
-    Align = alBottom
+    Anchors = [akLeft, akRight, akBottom]
     TabOrder = 4
     object Label2: TLabel
       Left = 6
@@ -270,7 +312,7 @@ object FrmMain: TFrmMain
     object Memo1: TMemo
       Left = 1
       Top = 1
-      Width = 841
+      Width = 385
       Height = 175
       Align = alTop
       Anchors = [akLeft, akTop, akRight, akBottom]
@@ -288,16 +330,16 @@ object FrmMain: TFrmMain
     object EdtURLBase: TEdit
       Left = 63
       Top = 181
-      Width = 773
+      Width = 317
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
-      Text = 'http://192.168.0.6:31339/0,0x002C,0x00A3,0x0068,0x006A'
+      Text = 'http://192.168.0.111:31339/0,0x0066,0x06FF,0x0700'
     end
     object EdtUrlPlay: TEdit
       Left = 63
       Top = 205
-      Width = 773
+      Width = 317
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
