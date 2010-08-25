@@ -451,7 +451,7 @@ type
       function  VLC_GetLibPath : String;
       function  VLC_GetVersion() : String;
 
-      procedure VLC_PlayMedia(MediaURL: String; MediaOptions : TStringList);
+      procedure VLC_PlayMedia(MediaURL: String; MediaOptions : TStringList; Panel : TPanel);
       procedure VLC_StopMedia();
 
       procedure VLC_Play();
@@ -1405,7 +1405,7 @@ begin
 
 end;
 
-procedure TLibVLC.VLC_PlayMedia(MediaURL: String; MediaOptions: TStringList);
+procedure TLibVLC.VLC_PlayMedia(MediaURL: String; MediaOptions: TStringList; Panel : TPanel);
 // create new player and new media
 var
   i : Integer;
@@ -1431,8 +1431,12 @@ begin
 
 //  libvlc_media_release(FMedia); // could be released, but needed for VLC_GetStats()
 
-  if Assigned(FPnlOutput) then
-    libvlc_media_player_set_hwnd(FPlayer, Pointer(FPnlOutput.Handle));
+  if Assigned(FPnlOutput) then begin
+    if Assigned(Panel) then
+      libvlc_media_player_set_hwnd(FPlayer, Pointer(Panel.Handle))
+    else
+      libvlc_media_player_set_hwnd(FPlayer, Pointer(FPnlOutput.Handle));
+  end;
 
 //  libvlc_video_set_mouse_input(FPlayer, 0); // mouse still always hidden...
 //  libvlc_video_set_key_input(FPlayer, 1); 
