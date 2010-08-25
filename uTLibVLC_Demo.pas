@@ -198,12 +198,12 @@ procedure TFrmMain.BtnPlayClick(Sender: TObject);
 begin
   LogStr('project: start base');
   if Assigned(VLC_Base) then
-    VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
+    VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
   LogStr('project: wait '+IntToStr(EdtDelay.Value)+'s...');
   Delay(EdtDelay.Value);
 
   LogStr('project: start play');
-  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
 end;
 
 procedure TFrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -373,7 +373,7 @@ begin
     VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, pan_Video, VlcCallback);
 
   Delay(500);
-  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
   
       (*
   // create media from url
@@ -413,13 +413,13 @@ begin
   PrepareAndStart_Play;
 
   LogStr('project: start base');
-  VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
+  VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
   LogStr('project: wait '+IntToStr(EdtDelay.Value)+'s...');
 
   Delay(EdtDelay.Value);
 
   LogStr('project: start play');
-  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
 end;
 
 procedure TFrmMain.BtnStartPlayClick(Sender: TObject);
@@ -660,19 +660,19 @@ begin
   PrepareAndStart_Play;
 
   LogStr('project: start base');
-  VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines));
+  VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
   LogStr('project: wait 2s...');
   Delay(2000);
 
   LogStr('project: start play');
-  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
 end;
 
 procedure TFrmMain.Button6Click(Sender: TObject);
 begin
   LogStr('project: start play');
   PrepareAndStart_Play;
-  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines));
+  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
 end;
 
 procedure TFrmMain.LogStr(Text: String);
