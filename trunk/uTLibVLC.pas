@@ -26,6 +26,11 @@
 //
 //   Changelog:
 //
+//     24.08.2010, DsChAeK
+//       -added adjust video functions
+//       -new funtions -> VLC_PlayMedia()/VLC_StopMedia()
+//       -enabled events, no crash anymore, but it's still not working
+//
 //     01.06.2010, DsChAeK
 //       -adaptions for LibVLC v1.1
 //       -replaced ILibVLC through TLibVLC, each object loads its own libvlc.dll!
@@ -38,7 +43,10 @@
 //        (since libVLC 1.1 you have to handle this by yourself, there are als no vlc hotkeys in fullscreen anymore!)
 //
 // ##############################################################################################
-
+//
+//  TODO: -events are not working
+//
+// ##############################################################################################
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
@@ -1409,7 +1417,7 @@ procedure TLibVLC.VLC_PlayMedia(MediaURL: String; MediaOptions: TStringList; Pan
 // create new player and new media
 var
   i : Integer;
-  //  Pevent_manager : Plibvlc_event_manager_t;
+  Pevent_manager : Plibvlc_event_manager_t;
 begin
   // media
   FMediaURL := MediaURL;
@@ -1439,16 +1447,15 @@ begin
   end;
 
 //  libvlc_video_set_mouse_input(FPlayer, 0); // mouse still always hidden...
-//  libvlc_video_set_key_input(FPlayer, 1); 
-           
-  // Events
-(*  Pevent_manager := libvlc_media_player_event_manager(FPlayer);
+//  libvlc_video_set_key_input(FPlayer, 1);
+
+  // Events (just a test right now, not working...)
+  Pevent_manager := libvlc_media_player_event_manager(FPlayer);
   libvlc_event_attach(Pevent_manager,
                       libvlc_MediaPlayerPlaying,
                       FCallback,
                       Pointer(Self));
-  *)
-  
+
   libvlc_media_player_play(FPlayer);
 end;
 

@@ -149,8 +149,8 @@ implementation
 {$R *.DFM}
 procedure vlcCallBack(p_event : Plibvlc_event_t; userdata : Pointer); cdecl;
 begin
-    if ( (NIL <> p_event) and (NIL <> userdata) ) then
-      (TFrmMain(userdata)).OnEvents( userdata,p_event );
+  if ( (NIL <> p_event) and (NIL <> userdata) ) then
+    (TFrmMain(userdata)).OnEvents( userdata, p_event );
 end;
 
 procedure TFrmMain.FormCreate(Sender: TObject);
@@ -444,7 +444,7 @@ end;
 
 procedure TFrmMain.IsPlaying(p_event : Plibvlc_event_t; userdata : Pointer);
 begin
-//  showmessage('');
+  showmessage('is playing');
 end;
 
 function TFrmMain.MakeCdeclCallback(const Method: TMethod; StackSize: Shortint): Pointer;

@@ -252,7 +252,7 @@ object FrmMain: TFrmMain
     Anchors = [akTop, akRight]
     Lines.Strings = (
       
-        ':sout=#duplicate{dst=std{access=http,mux=ts,dst=192.168.0.3:3133' +
+        ':sout=#duplicate{dst=std{access=http,mux=ts,dst=192.168.0.9:3133' +
         '9} :sout-keep'
       ':sout-keep'
       ':sout-all'
@@ -334,7 +334,7 @@ object FrmMain: TFrmMain
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
-      Text = 'http://192.168.0.111:31339/0,0x0066,0x06FF,0x0700'
+      Text = 'http://192.168.0.8:31339/0,0x0065,0x01FF,0x0200,0x0201,0x0203'
     end
     object EdtUrlPlay: TEdit
       Left = 63
@@ -343,7 +343,7 @@ object FrmMain: TFrmMain
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
-      Text = 'http://192.168.0.3:31339'
+      Text = 'http://192.168.0.9:31339'
     end
   end
   object TimerLog: TTimer
