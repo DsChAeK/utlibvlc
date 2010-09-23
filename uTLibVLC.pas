@@ -483,7 +483,9 @@ type
       function  VLC_GetStats() : libvlc_media_stats_t;
 
       procedure VLC_AdjustVideo(Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
-      procedure VLC_ResetVideo();      
+      procedure VLC_ResetVideo();
+
+      procedure VLC_SetLogo(LogoFile : string);      
 
       property  IsFullscreen: Boolean read FFullscreen;
       property  MediaURL: String read FMediaURL;
@@ -1450,12 +1452,12 @@ begin
 //  libvlc_video_set_key_input(FPlayer, 1);
 
   // Events (just a test right now, not working...)
-  Pevent_manager := libvlc_media_player_event_manager(FPlayer);
+(*  Pevent_manager := libvlc_media_player_event_manager(FPlayer);
   libvlc_event_attach(Pevent_manager,
                       libvlc_MediaPlayerPlaying,
                       FCallback,
                       Pointer(Self));
-
+  *)
   libvlc_media_player_play(FPlayer);
 end;
 
@@ -1495,6 +1497,16 @@ begin
   if Assigned(FPlayer) then begin
     libvlc_video_set_adjust_int(FPlayer, libvlc_adjust_Enable, 0);
   end;
+end;
+
+procedure TLibVLC.VLC_SetLogo(LogoFile: string);
+begin
+   libvlc_video_set_logo_int(FPlayer,libvlc_logo_enable, 1);
+   libvlc_video_set_logo_string(FPlayer,libvlc_logo_file,PAnsiChar(LogoFile));
+   libvlc_video_set_logo_int(FPlayer,libvlc_logo_x,0);
+   libvlc_video_set_logo_int(FPlayer,libvlc_logo_y,0);
+   libvlc_video_set_logo_int(FPlayer,libvlc_logo_repeat,-1); // continuous?
+   libvlc_video_set_logo_int(FPlayer,libvlc_logo_opacity,255); // totally opaque
 end;
 
 end.

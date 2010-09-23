@@ -83,6 +83,7 @@ type
     Label7: TLabel;
     EdtDelay: TSpinEdit;
     Button6: TButton;
+    Button7: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -111,6 +112,7 @@ type
     procedure Stop1Click(Sender: TObject);
     procedure BtnOpenClick(Sender: TObject);
     procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -678,6 +680,11 @@ end;
 procedure TFrmMain.LogStr(Text: String);
 begin
   Memo1.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+', '+Text); 
+end;
+
+procedure TFrmMain.Button7Click(Sender: TObject);
+begin
+  VLC_Play.VLC_SetLogo('c:\test.png');
 end;
 
 end.
