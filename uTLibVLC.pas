@@ -25,10 +25,15 @@
 // ##############################################################################################
 //
 //   Changelog:
+//     24.10.2010, DsChAeK
+//       -If one instance toggled to fullscreen and another wants to switch back
+//        it needs to know some parameters which I made public.
+//        Handling between instances is on your side.
+//       -disabled events, new version crashes again... :)
 //
 //     24.08.2010, DsChAeK
 //       -added adjust video functions
-//       -new funtions -> VLC_PlayMedia()/VLC_StopMedia()
+//       -new functions -> VLC_PlayMedia()/VLC_StopMedia()
 //       -enabled events, no crash anymore, but it's still not working
 //
 //     01.06.2010, DsChAeK
@@ -438,6 +443,7 @@ type
       FPnlOutput    : TPanel;                 // panel for video output
       FFormFS       : TForm;                  // form for video fullscreen display
       FFullscreen   : Boolean;                // true=fullscreen false=window
+
       FOldPanTop    : Integer;                // orig panel pos
       FOldPanLeft   : Integer;                // orig panel pos
       FOldPanHeight : Integer;                // orig panel pos
@@ -486,6 +492,14 @@ type
       procedure VLC_ResetVideo();
 
       procedure VLC_SetLogo(LogoFile : string);      
+
+      property  OldPanTop   : Integer read FOldPanTop    write FOldPanTop;
+      property  OldPanLeft  : Integer read FOldPanLeft   write FOldPanLeft;
+      property  OldPanHeight: Integer read FOldPanHeight write FOldPanHeight;
+      property  OldPanWidth : Integer read FOldPanWidth  write FOldPanWidth;
+      property  PnlOutput : TPanel read FPnlOutput  write FPnlOutput;
+      property  FormFS : TForm read FFormFS  write FFormFS;
+      property  Fullscreen : Boolean read FFullscreen  write FFullscreen;
 
       property  IsFullscreen: Boolean read FFullscreen;
       property  MediaURL: String read FMediaURL;
@@ -1419,7 +1433,7 @@ procedure TLibVLC.VLC_PlayMedia(MediaURL: String; MediaOptions: TStringList; Pan
 // create new player and new media
 var
   i : Integer;
-  Pevent_manager : Plibvlc_event_manager_t;
+//  Pevent_manager : Plibvlc_event_manager_t;
 begin
   // media
   FMediaURL := MediaURL;
