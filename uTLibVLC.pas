@@ -25,10 +25,13 @@
 // ##############################################################################################
 //
 //   Changelog:
+//     30.10.2010
+//       -fixed fullscreen toggle with multi-monitor
+//
 //     24.10.2010, DsChAeK
-//       -If one instance toggled to fullscreen and another wants to switch back
+//       -if one instance toggled to fullscreen and another wants to switch back
 //        it needs to know some parameters which I made public.
-//        Handling between instances is on your side.
+//        handling between instances is on your side.
 //       -disabled events, new version crashes again... :)
 //
 //     24.08.2010, DsChAeK
@@ -1184,7 +1187,7 @@ begin
   if FFullscreen then begin
     FFormFS.Hide;
 
-    SetAParent(Panel.Handle, Panel.Parent.Handle, Screen.height, Screen.Width);
+    SetAParent(Panel.Handle, Panel.Parent.Handle, TForm(Panel.Parent).Monitor.Height, TForm(Panel.Parent).Monitor.Width);
 
     Panel.Top := FOldPanTop;
     Panel.Left := FOldPanLeft;
@@ -1199,13 +1202,17 @@ begin
     FOldPanHeight := Panel.Height;
     FOldPanWidth := Panel.Width;
 
-    SetAParent(Panel.Handle, FFormFS.Handle, Screen.height, Screen.Width);
+    SetAParent(Panel.Handle, FFormFS.Handle, TForm(Panel.Parent).Monitor.Height, TForm(Panel.Parent).Monitor.Width);
 
     Panel.Top := 0;
     Panel.Left := 0;
-    Panel.Height := Screen.height;
-    Panel.Width := Screen.width;
+    Panel.Height := TForm(Panel.Parent).Monitor.Height;
+    Panel.Width := TForm(Panel.Parent).Monitor.Width;
 
+    FFormFS.Top := 0;
+    FFormFS.Left := 0;
+    FFormFS.Height := TForm(Panel.Parent).Monitor.Height;
+    FFormFS.Width := TForm(Panel.Parent).Monitor.Width;
     FFormFS.Show;
     FFormFS.BringToFront;
 
@@ -1249,7 +1256,7 @@ begin
   if hWndPrevParent = 0 then
     Result := false
   else
-  Result := true;
+    Result := true;
 end;
 
 procedure TLibVLC.VLC_SetAudioTrack(iTrack: Integer);
