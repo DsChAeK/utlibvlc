@@ -25,7 +25,13 @@
 // ##############################################################################################
 //
 //   Changelog:
-//     30.10.2010
+//     06.02.2011, DsChAeK
+//       -real stay on top 
+//       -toggle fullscreen with TFrame-object
+//       -VLC_Stop() returns if really stopped
+//       -set background panel for fullscreen form
+//
+//     30.10.2010, DsChAeK
 //       -fixed fullscreen toggle with multi-monitor
 //
 //     24.10.2010, DsChAeK
@@ -64,7 +70,7 @@ unit uTLibVLC;
 interface
 
 uses
-  sysUtils, windows,
+  sysUtils, windows, controls,
 
   classes, extctrls, forms;
 
@@ -425,6 +431,13 @@ type
   Plibvlc_media_discoverer_t = type Pointer;
 
 type
+  // form for fullscreen display
+  TFormFS = class(TForm)
+    procedure CreateParams(var Params: TCreateParams);override;
+  end;
+  
+type
+  // main class
   TLibVLC = class(TObject)
     private
       FName         : String;                 // name for instance
@@ -442,9 +455,9 @@ type
       FMediaURL     : String;                 // media url
       FMediaOpt     : TStringList;            // media options
       FStats        : libvlc_media_stats_t;   // stats
-
+      
       FPnlOutput    : TPanel;                 // panel for video output
-      FFormFS       : TForm;                  // form for video fullscreen display
+      FFormFS       : TFormFS;                // form for video fullscreen display
       FFullscreen   : Boolean;                // true=fullscreen false=window
 
       FOldPanTop    : Integer;                // orig panel pos
@@ -453,6 +466,8 @@ type
       FOldPanWidth  : Integer;                // orig panel pos
 
       FCallback     : libvlc_callback_t;      // callback for events
+      FBackground   : TPanel;                 // background for fullscreen mode
+      FBackgroundParent : TWinControl;        // parent from background panel       
 
       // internal functions
       function  GetAProcAddress( var Addr : Pointer; Name : PChar) : Integer;
@@ -480,7 +495,8 @@ type
       procedure VLC_SetDeinterlaceMode(Mode : String);
       procedure VLC_SetCropMode(Mode : String);
       procedure VLC_SetARMode(Mode : String);
-      procedure VLC_ToggleFullscreen(Panel : TPanel);
+      procedure VLC_ToggleFullscreen(Panel : TPanel; Background: TPanel);overload;virtual;
+      procedure VLC_ToggleFullscreen(Frame : TFrame; Background: TPanel);overload;
 
       procedure VLC_SetAudioTrack(iTrack : Integer);
       function  VLC_GetAudioTrack() : Integer;
@@ -494,14 +510,15 @@ type
       procedure VLC_AdjustVideo(Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
       procedure VLC_ResetVideo();
 
-      procedure VLC_SetLogo(LogoFile : string);      
+      procedure VLC_SetLogo(LogoFile : string);
+
 
       property  OldPanTop   : Integer read FOldPanTop    write FOldPanTop;
       property  OldPanLeft  : Integer read FOldPanLeft   write FOldPanLeft;
       property  OldPanHeight: Integer read FOldPanHeight write FOldPanHeight;
       property  OldPanWidth : Integer read FOldPanWidth  write FOldPanWidth;
       property  PnlOutput : TPanel read FPnlOutput  write FPnlOutput;
-      property  FormFS : TForm read FFormFS  write FFormFS;
+      property  FormFS : TFormFS read FFormFS  write FFormFS;
       property  Fullscreen : Boolean read FFullscreen  write FFullscreen;
 
       property  IsFullscreen: Boolean read FFullscreen;
@@ -917,7 +934,8 @@ begin
   libvlc_log_close(FLog);
   libvlc_release(FLib);
 
-  FFormFS.Free;
+  if Assigned(FFormFS) then
+    FFormFS.Free;
 end;
 
 procedure TLibVLC.LoadFunctions;
@@ -1171,21 +1189,44 @@ end;
 
 procedure TLibVLC.VLC_Stop;
 // stop media_player
+var
+  i : Integer;
 begin
   if not Assigned(FPlayer) then
     exit;
 
   libvlc_media_player_stop(FPlayer);
+
+  // wait until stop is really finished, because VLC_IsPlaying()
+  // will return true during stopping
+  for i:=0 to 10 do begin
+    if not VLC_IsPlaying() then
+      break
+    else
+      Sleep(100);
+  end;
 end;
 
-procedure TLibVLC.VLC_ToggleFullscreen(Panel: TPanel);
-// toggle fullscreen
+procedure TLibVLC.VLC_ToggleFullscreen(Panel: TPanel; Background: TPanel);
+// toggle fullscreen with panel
 begin
   if not Assigned(FPnlOutput) then
     exit;
 
+  if Assigned(FBackground) then begin
+    if FBackground.Parent = FFormFS then
+      Background.Parent := FBackgroundParent
+    else begin
+      FBackgroundParent := Background.Parent;
+      FBackground := Background;
+      FBackground.Parent := FFormFS;
+    end;
+  end;  
+
   if FFullscreen then begin
-    FFormFS.Hide;
+    FFormFS.Close;
+    
+    SetWindowPos(FFormFS.Handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE or SWP_NOMOVE or SWP_NOSIZE);
 
     SetAParent(Panel.Handle, Panel.Parent.Handle, TForm(Panel.Parent).Monitor.Height, TForm(Panel.Parent).Monitor.Width);
 
@@ -1214,7 +1255,12 @@ begin
     FFormFS.Height := TForm(Panel.Parent).Monitor.Height;
     FFormFS.Width := TForm(Panel.Parent).Monitor.Width;
     FFormFS.Show;
-    FFormFS.BringToFront;
+
+    SetWindowPos(FFormFS.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE or SWP_NOMOVE or SWP_NOSIZE);
+
+    SetAParent(Panel.Handle, FFormFS.Handle, TForm(Panel.Parent).Monitor.Height, TForm(Panel.Parent).Monitor.Width);
+
+    FFormFS.SetFocus;
 
     FFullscreen := true;
   end;
@@ -1311,10 +1357,12 @@ begin
   if not Assigned(FPlayer) then
     exit;
 
-  if libvlc_media_player_is_playing(FPlayer) = 1 then
+  if (libvlc_media_player_is_playing(FPlayer) = 1) then begin
     Result := true
-  else
+  end  
+  else begin
     Result := false;
+  end;
 end;
 
 procedure TLibVLC.VLC_SetCropMode(Mode: String);
@@ -1370,15 +1418,22 @@ begin
 
   // fullscreen
   FFullscreen := false;
-  FFormFS := TForm.Create(nil);
-  FFormFS.BorderStyle := bsNone;
-  FFormFS.Width := Screen.Width;
-  FFormFS.Height := Screen.Height;
-  FFormFS.Top := 0;
-  FFormFS.Left := 0;
 
-  //output
-  FPnlOutput := PnlOutput;
+  if Assigned(PnlOutput) then begin
+    FFormFS := TFormFS.CreateNew(nil);
+
+    FFormFS.BorderStyle := bsNone;
+    FFormFS.Width := Screen.Width;
+    FFormFS.Height := Screen.Height;
+    FFormFS.Visible := false;
+    FFormFS.Top := 0;
+    FFormFS.Left := 0;
+
+    FBackground  := TPanel.Create(FFormFS);
+
+    //output
+    FPnlOutput := PnlOutput;
+  end;  
 
   // callback
   FCallback := Callback;
@@ -1484,9 +1539,19 @@ end;
 
 procedure TLibVLC.VLC_StopMedia;
 // stop media_player and free player + media
+var
+  i : Integer;
 begin
   if Assigned(FPlayer) then begin
     libvlc_media_player_stop(FPlayer);
+
+    // wait until stop is really finished
+    for i:=0 to 10 do begin
+      if not VLC_IsPlaying() then
+        break
+      else
+        Sleep(100);
+    end;
 
     libvlc_media_player_release(FPlayer);
     FPlayer := nil;
@@ -1529,5 +1594,78 @@ begin
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_repeat,-1); // continuous?
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_opacity,255); // totally opaque
 end;
+
+procedure TLibVLC.VLC_ToggleFullscreen(Frame: TFrame; Background: TPanel);
+// toggle fullscreen with panel in a frame
+begin
+
+  if not Assigned(FPnlOutput) then
+    exit;
+
+  if Assigned(FBackground) then begin
+    if FBackground.Parent = FFormFS then
+      Background.Parent := FBackgroundParent
+    else begin
+      FBackgroundParent := Background.Parent;
+      FBackground := Background;
+      FBackground.Parent := FFormFS;
+    end;
+  end;  
+
+  if FFullscreen then begin
+    FFormFS.Hide;
+
+    SetWindowPos(FFormFS.Handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE or SWP_NOMOVE or SWP_NOSIZE);
+
+    SetAParent(Frame.Handle, Frame.Parent.Handle, TForm(Frame.Parent).Monitor.Height, TForm(Frame.Parent).Monitor.Width);
+
+    Frame.Top := FOldPanTop;
+    Frame.Left := FOldPanLeft;
+    Frame.Height := FOldPanHeight;
+    Frame.Width := FOldPanWidth;
+
+    FFullscreen := false;
+  end
+  else begin
+    FOldPanTop := Frame.Top;
+    FOldPanLeft := Frame.Left;
+    FOldPanHeight := Frame.Height;
+    FOldPanWidth := Frame.Width;
+
+    SetAParent(Frame.Handle, FFormFS.Handle, TForm(Frame.Parent).Monitor.Height, TForm(Frame.Parent).Monitor.Width);
+
+    Frame.Top := 0;
+    Frame.Left := 0;
+    Frame.Height := TForm(Frame.Parent).Monitor.Height;
+    Frame.Width := TForm(Frame.Parent).Monitor.Width;
+
+    FFormFS.Top := 0;
+    FFormFS.Left := 0;
+    FFormFS.Height := TForm(Frame.Parent).Monitor.Height;
+    FFormFS.Width := TForm(Frame.Parent).Monitor.Width;
+    FFormFS.Show;
+
+    SetWindowPos(FFormFS.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE or SWP_NOMOVE or SWP_NOSIZE);
+
+    FFormFS.SetFocus;
+
+    FFullscreen := true;
+  end;
+end;
+
+{ TFormFS }
+
+procedure TFormFS.CreateParams(var Params: TCreateParams);
+// -create a form with stayontop and desktop as parent, so no other window can disturb
+// -toolwindow to prevent taskbar entry
+begin
+  inherited CreateParams(Params);
+  with Params do begin
+    ExStyle := ExStyle or WS_EX_TOPMOST or WS_EX_TOOLWINDOW;
+    WndParent := GetDesktopwindow;
+  end;
+end;
+
+initialization
 
 end.

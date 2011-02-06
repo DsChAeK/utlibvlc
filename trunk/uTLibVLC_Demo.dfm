@@ -1,6 +1,6 @@
 object FrmMain: TFrmMain
-  Left = 205
-  Top = 135
+  Left = 194
+  Top = 193
   BorderStyle = bsSingle
   Caption = 'VLC Testsuite'
   ClientHeight = 500
@@ -262,16 +262,15 @@ object FrmMain: TFrmMain
     Lines.Strings = (
       
         ':sout=#duplicate{dst=std{access=http,mux=ts,dst=192.168.0.3:3133' +
-        '9} :sout-keep'
+        '9} '
       ':sout-keep'
       ':sout-all'
-      ':http-caching=1500'
+      ':udp-caching=200'
       ':high-priority'
       ':sout-ts-es-id-pid'
       ':ts-es-id-pid'
       ':http-reconnect'
-      ':video-title-show=0'
-      ':timeshift-force=1')
+      ':http-caching=1500')
     ScrollBars = ssVertical
     TabOrder = 2
   end
@@ -283,16 +282,20 @@ object FrmMain: TFrmMain
     Anchors = [akTop, akRight]
     Lines.Strings = (
       ':deinterlace=1'
-      ':deinterlace-mode=blend'
+      ':video-filter=adjust'
+      ':contrast=1.000'
+      ':brightness=1.000'
+      ':hue=0'
+      ':saturation=1.000'
+      ':gamma=1.000'
+      ':deinterlace-mode=mean'
       ':vout='
       ':high-priority'
+      ':input-record-path='
       ':http-caching=1500'
       ':aspect-ratio=default'
       ':crop=default'
-      ':timeshift-granularity=50'
-      ':timeshift-dir=c:\'
-      ':timeshift-force=1'
-      ':http-reconnect'
+      ':no-fullscreen'
       ':no-video-title-show')
     ScrollBars = ssVertical
     TabOrder = 3
@@ -343,7 +346,7 @@ object FrmMain: TFrmMain
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
-      Text = 'http://192.168.0.111:31339/0,0x0067,0x06FF,0x0700,0x0701,0x0703'
+      Text = 'http://192.168.0.111:31339/0,0x0061,0x01FF,0x0200,0x0203'
     end
     object EdtUrlPlay: TEdit
       Left = 63

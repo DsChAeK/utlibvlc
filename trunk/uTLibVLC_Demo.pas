@@ -136,6 +136,7 @@ type
 
     FOnIsPLaying       : TOnIsPlaying;
     FMethodOnIsPlaying : TMethodOnIsPlaying;
+
     procedure Delay(msDelay: DWORD);
     procedure LogStr(Text : String);
 
@@ -550,12 +551,12 @@ end;
 
 procedure TFrmMain.pan_VideoDblClick(Sender: TObject);
 begin
-  VLC_Play.VLC_ToggleFullscreen(pan_Video);
+  VLC_Play.VLC_ToggleFullscreen(pan_Video, nil);
 end;
 
 procedure TFrmMain.FormDblClick(Sender: TObject);
 begin
-  VLC_Play.VLC_ToggleFullscreen(pan_Video);
+  VLC_Play.VLC_ToggleFullscreen(pan_Video, nil);
 end;
 
 procedure TFrmMain.OnEvents(Sender: TObject; MediaEvent: plibvlc_event_t);
