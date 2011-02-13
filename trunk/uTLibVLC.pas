@@ -1213,7 +1213,7 @@ begin
   if not Assigned(FPnlOutput) then
     exit;
 
-  if Assigned(FBackground) then begin
+  if Assigned(Background) then begin
     if FBackground.Parent = FFormFS then
       Background.Parent := FBackgroundParent
     else begin
@@ -1602,7 +1602,7 @@ begin
   if not Assigned(FPnlOutput) then
     exit;
 
-  if Assigned(FBackground) then begin
+  if Assigned(Background) then begin
     if FBackground.Parent = FFormFS then
       Background.Parent := FBackgroundParent
     else begin
