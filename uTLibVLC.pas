@@ -25,6 +25,12 @@
 // ##############################################################################################
 //
 //   Changelog:
+//
+//     15.02.2011, DsChAeK
+//       -VLC_GetAudioTrackList(): get real track order and ids
+//        ->duplicated http ts streams have random track orders 
+//          compared to the original stream!
+//       
 //     06.02.2011, DsChAeK
 //       -real stay on top 
 //       -toggle fullscreen with TFrame-object
@@ -73,6 +79,9 @@ uses
   sysUtils, windows, controls,
 
   classes, extctrls, forms;
+
+const
+  ChrCRLF      = ^M^J;
 
 type
   Plibvlc_instance_t = type Pointer;
@@ -500,6 +509,7 @@ type
 
       procedure VLC_SetAudioTrack(iTrack : Integer);
       function  VLC_GetAudioTrack() : Integer;
+      function  VLC_GetAudioTrackList() : String;
       procedure VLC_ToggleMute();
       procedure VLC_SetVolume(Level : Integer);
       function  VLC_GetVolume() : Integer;
@@ -1651,6 +1661,33 @@ begin
 
     FFullscreen := true;
   end;
+end;
+
+function TLibVLC.VLC_GetAudioTrackList: String;
+var
+  Track : Plibvlc_track_description_t;
+begin
+  Result := '';
+
+  if not Assigned(FPlayer) then
+    exit;
+
+  // first track is only for deactivating sound...
+  Track := libvlc_audio_get_track_description(FPlayer);
+  if not Assigned(Track) then
+    exit;
+
+  // so we take the second one...
+  Track := Track.p_next;
+  if not Assigned(Track) then
+    exit;
+
+  // and all others following...
+  repeat
+    Result := Result + IntToStr(Track.i_id)+' '+Track.psz_name+ChrCRLF;
+    Track := Track.p_next;
+  until not Assigned(Track);
+  
 end;
 
 { TFormFS }
