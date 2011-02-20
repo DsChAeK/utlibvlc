@@ -84,6 +84,8 @@ type
     EdtDelay: TSpinEdit;
     Button6: TButton;
     Button7: TButton;
+    SpinEdit2: TSpinEdit;
+    Label8: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -107,12 +109,13 @@ type
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
-    procedure SpinEdit1Change(Sender: TObject);
+    procedure SpinEdit2Change(Sender: TObject);
     procedure Close1Click(Sender: TObject);
     procedure Stop1Click(Sender: TObject);
     procedure BtnOpenClick(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
+    procedure SpinEdit1Change(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -371,14 +374,14 @@ begin
 //  Params[4] := PAnsiChar('--drawable-hwnd=0');//+ IntToStr(pan_Video.Handle));
 
   // create libvlc instance
-
+      (*
   if not Assigned(VLC_Play) then
     VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, pan_Video, VlcCallback);
 
   Delay(500);
   VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
   
-      (*
+
   // create media from url
   FMedia := VLC.Lib.libvlc_media_new_location(FLibInt, 'http://192.168.0.99:31339/0,0x0065,0x0066,0x0067,0x006B');
 
@@ -544,9 +547,9 @@ end;
 
 procedure TFrmMain.BtnFullscreenClick(Sender: TObject);
 begin
-  VLC_Play.VLC_ToggleFullscreen(pan_Video);
+  VLC_Play.VLC_ToggleFullscreen(pan_Video, nil);
   Delay(3000);
-  VLC_Play.VLC_ToggleFullscreen(pan_Video);
+  VLC_Play.VLC_ToggleFullscreen(pan_Video, nil);
 end;
 
 procedure TFrmMain.pan_VideoDblClick(Sender: TObject);
@@ -565,15 +568,8 @@ begin
 end;
 
 procedure TFrmMain.BtnTrackClick(Sender: TObject);
-var
-  i : Integer;
 begin
-  i := VLC_Play.VLC_GetAudioTrack;
-
-  if i = 1 then
-    VLC_Play.VLC_SetAudioTrack(2)
-  else
-    VLC_Play.VLC_SetAudioTrack(1);
+  Memo1.Lines.Append(VLC_Play.VLC_GetAudioTrackList());
 end;
 
 procedure TFrmMain.BtnFScreenAutoClick(Sender: TObject);
@@ -630,9 +626,9 @@ begin
   VLC_Play.VLC_ToggleMute();
 end;
 
-procedure TFrmMain.SpinEdit1Change(Sender: TObject);
+procedure TFrmMain.SpinEdit2Change(Sender: TObject);
 begin
-  VLC_Play.VLC_SetVolume(SpinEdit1.Value);
+  VLC_Play.VLC_SetAudioTrack(SpinEdit2.Value)
 end;
 
 procedure TFrmMain.Close1Click(Sender: TObject);
@@ -675,7 +671,7 @@ procedure TFrmMain.Button6Click(Sender: TObject);
 begin
   LogStr('project: start play');
   PrepareAndStart_Play;
-  VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
+  VLC_Play.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptPlay.Lines), nil);
 end;
 
 procedure TFrmMain.LogStr(Text: String);
@@ -686,6 +682,11 @@ end;
 procedure TFrmMain.Button7Click(Sender: TObject);
 begin
   VLC_Play.VLC_SetLogo('c:\test.png');
+end;
+
+procedure TFrmMain.SpinEdit1Change(Sender: TObject);
+begin
+  VLC_Play.VLC_SetVolume(SpinEdit1.Value)
 end;
 
 end.

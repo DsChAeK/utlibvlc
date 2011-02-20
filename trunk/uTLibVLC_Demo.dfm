@@ -77,6 +77,13 @@ object FrmMain: TFrmMain
       Height = 13
       Caption = 'Delay'
     end
+    object Label8: TLabel
+      Left = 433
+      Top = 36
+      Width = 28
+      Height = 13
+      Caption = 'Track'
+    end
     object BtnInit: TButton
       Left = 3
       Top = 3
@@ -114,9 +121,9 @@ object FrmMain: TFrmMain
       OnClick = BtnStopClick
     end
     object BtnStartPlay: TButton
-      Left = 351
+      Left = 332
       Top = 4
-      Width = 75
+      Width = 94
       Height = 27
       Caption = 'Start Test'
       TabOrder = 4
@@ -136,7 +143,7 @@ object FrmMain: TFrmMain
       Top = 3
       Width = 75
       Height = 27
-      Caption = 'Audio Track'
+      Caption = 'Audio Tracks'
       TabOrder = 6
       OnClick = BtnTrackClick
     end
@@ -235,11 +242,11 @@ object FrmMain: TFrmMain
       Value = 2000
     end
     object Button6: TButton
-      Left = 354
+      Left = 332
       Top = 33
-      Width = 75
+      Width = 93
       Height = 27
-      Caption = 'Play Play URL'
+      Caption = 'Play Base URL'
       TabOrder = 17
       OnClick = Button6Click
     end
@@ -251,6 +258,17 @@ object FrmMain: TFrmMain
       Caption = 'SetLogo'
       TabOrder = 18
       OnClick = Button7Click
+    end
+    object SpinEdit2: TSpinEdit
+      Left = 464
+      Top = 33
+      Width = 43
+      Height = 22
+      MaxValue = 200
+      MinValue = 0
+      TabOrder = 19
+      Value = 0
+      OnChange = SpinEdit2Change
     end
   end
   object MmoOptBase: TMemo
@@ -346,7 +364,7 @@ object FrmMain: TFrmMain
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
-      Text = 'http://192.168.0.111:31339/0,0x0061,0x01FF,0x0200,0x0203'
+      Text = 'http://192.168.0.111:31339/0,0x002C,0x00A3,0x0068,0x006A'
     end
     object EdtUrlPlay: TEdit
       Left = 63
@@ -384,7 +402,7 @@ object FrmMain: TFrmMain
     end
   end
   object DlgOpen: TOpenDialog
-    Left = 328
-    Top = 459
+    Left = 474
+    Top = 411
   end
 end
