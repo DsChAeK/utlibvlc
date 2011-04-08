@@ -86,6 +86,7 @@ type
     Button7: TButton;
     SpinEdit2: TSpinEdit;
     Label8: TLabel;
+    Button8: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -116,6 +117,7 @@ type
     procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure SpinEdit1Change(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -234,28 +236,19 @@ begin
   // plugin path
   Params[0] := PAnsiChar('--plugin-path=./plugins/');
 
-  // vlc configuration ignorieren (default settings!)
-  Params[1] := PAnsiChar('--ignore-config');
-
-  // caching
-//  Params[2] := PAnsiChar('--http-caching=1000');
-
-//  Params[3] := PAnsiChar('--http-reconnect');
-
   // quiet
-  Params[5] := PAnsiChar('--quiet');
-  //Params[6] := PAnsiChar('--mouse-events');
+  Params[1] := PAnsiChar('--quiet');
 
   // keine Ausgabe
-  Params[8] := PAnsiChar('--vout=dummy');
-  Params[9] := PAnsiChar('--aout=dummy');
+  Params[2] := PAnsiChar('--vout=dummy');
+  Params[3] := PAnsiChar('--aout=dummy');
 
   if Assigned(VLC_Base) then begin
     VLC_Base.Free;
   end;
 
   if FileExists('libvlc.dll') then
-    VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 3, nil, VlcCallback)
+    VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 4, nil, VlcCallback)
   else
     VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, nil, VLCCallback);
 
@@ -274,29 +267,8 @@ begin
   // plugin path
   Params[0] := PAnsiChar('--plugin-path=./plugins/');
 
-  // vlc configuration ignorieren (default settings!)
-  Params[1] := PAnsiChar('--ignore-config');
-
-  // caching
-  //Params[2] := PAnsiChar('--http-caching=1000');
-
-//  Params[2] := PAnsiChar('--http-reconnect');
-
-  //Params[2] := PAnsiChar('--timeshift');
-
-  // rc interface
-//  Params[5] := PAnsiChar('--extraintf=oldhttp:oldrc');
-//  Params[6] := PAnsiChar('--rc-host=127.0.0.1:'+IntToStr(RC_PORT));
-//  Params[7] := PAnsiChar('--http-host=127.0.0.1:'+IntToStr(HTTP_PORT));
-//  Params[8] := PAnsiChar('--rc-quiet');
-
   // quiet
-  Params[7] := PAnsiChar('--quiet');
-  //Params[8] := PAnsiChar('--rc-quiet');
-//  Params[6] := PAnsiChar('--mouse-events');
-
-//  Params[10] := PAnsiChar('--deinterlace=1');
-//  Params[11] := PAnsiChar('--deinterlace-mode=mean');
+  Params[1] := PAnsiChar('--quiet');
 
   // Free
   if Assigned(VLC_Play) then begin
@@ -623,7 +595,7 @@ end;
 
 procedure TFrmMain.Button5Click(Sender: TObject);
 begin
-  VLC_Play.VLC_ToggleMute();
+  VLC_Play.VLC_SetMute(not VLC_Play.VLC_GetMute);
 end;
 
 procedure TFrmMain.SpinEdit2Change(Sender: TObject);
@@ -687,6 +659,11 @@ end;
 procedure TFrmMain.SpinEdit1Change(Sender: TObject);
 begin
   VLC_Play.VLC_SetVolume(SpinEdit1.Value)
+end;
+
+procedure TFrmMain.Button8Click(Sender: TObject);
+begin                            // FF0000
+  vlc_play.VLC_SetMarquee('TEST', 16711680, 100, 6, 0, 50, 5000, 50, 50);
 end;
 
 end.
