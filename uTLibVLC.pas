@@ -3,7 +3,7 @@
 //   URL:           http://www.dschaek.de
 //   Projekt:       uTLibVLC
 //   Lizenz:        Freeware
-//   Version:       1.0
+//   Version:       2.0
 //
 //   Aufgabe:       Wrapper for LibVLC v1.1 (or higher)
 //
@@ -26,10 +26,17 @@
 //
 //   Changelog:
 //
+//     07.04.2011, DsChAeK
+//       -updated version to v2.0
+//       -added constant arrays for mux/vcodecs/acodecs which are offered by VLC GUI
+//       -added VLC_SetMute()/VLC_GetMute()
+//       -removed VLC_ToggleMute()
+//       -added VLC_SetMarquee()
+//
 //     15.02.2011, DsChAeK
 //       -VLC_GetAudioTrackList(): get real track order and ids
 //        ->duplicated http ts streams have random track orders 
-//          compared to the original stream!
+//          compared to the original stream! -> VLC BUG
 //       
 //     06.02.2011, DsChAeK
 //       -real stay on top 
@@ -81,7 +88,58 @@ uses
   classes, extctrls, forms;
 
 const
-  ChrCRLF      = ^M^J;
+  ChrCRLF = ^M^J;
+
+  // MUX (Name + Mux + FileExtension)
+  MAX_FORMAT_MUX = 13;
+  MUX_NameMuxExt : array[0..12, 0..2] of String = (
+                                                    ('MPEG-TS','ts','.ts'),
+                                                    ('MPEG-PS','ps','.ps'),
+                                                    ('MPEG1','mpeg1','.mpeg1'),
+                                                    ('ASF/WMV','asf','.asf'),
+                                                    ('WEBM','webm','.webm'),
+                                                    ('MJPEG','mpjpeg','.mjpeg'),
+                                                    ('MKV','mkv','.mkv'),
+                                                    ('OGG/OGM','ogg','.ogm'),
+                                                    ('WAV','wav','.wav'),
+                                                    ('MP3','raw','.mp3'),
+                                                    ('MP4/MOV','mp4','.mp4'),
+                                                    ('FLV','flv','.flv'),
+                                                    ('AVI','avi','.avi')
+                                                  );
+  // VIDEO CODEC (Name + Codec)
+  MAX_FORMAT_VCODEC = 14;
+  VCODEC_NameCodec : array[0..13, 0..1] of String = (
+                                                      ('MPEG-1','mp1v'),
+                                                      ('MPEG-2','mp2v'),
+                                                      ('MPEG-4','mp4v'),
+                                                      ('DIVX 1','DIV1'),
+                                                      ('DIVX 2','DIV2'),
+                                                      ('DIVX 3','DIV3'),
+                                                      ('H-263','H263'),
+                                                      ('H-264','h264'),
+                                                      ('VP8','VP80'),
+                                                      ('WMV1','WMV1'),
+                                                      ('WMV2','WMV2'),
+                                                      ('M-JPEG','MJPG'),
+                                                      ('Theora','theo'),
+                                                      ('Dirac','drac')
+                                                    );
+
+  // AUDIO CODEC (Name + Codec)
+  MAX_FORMAT_ACODEC = 9;
+  ACODEC_NameCodec : array[0..8, 0..1] of String = (
+                                                      ('MPEG Audio','mpga'),
+                                                      ('MP3','mp3'),
+                                                      ('MPEG 4 Audio (AAC)','mp4v'),
+                                                      ('A52/AC-3','a52'),
+                                                      ('Vorbis','vorb'),
+                                                      ('Flac','flac'),
+                                                      ('Speex','spx'),
+                                                      ('WAV','s16l'),
+                                                      ('WMA2','wma2')
+                                                    );
+
 
 type
   Plibvlc_instance_t = type Pointer;
@@ -189,9 +247,9 @@ const
   libvlc_media_option_unique = $100;
 
 type
-  libvlc_video_marquee_int_option_t = (
+  libvlc_video_marquee_option_t = (
     libvlc_marquee_Enabled,
-    //libvlc_marquee_Text,
+    libvlc_marquee_Text,
     libvlc_marquee_Color,
     libvlc_marquee_Opacity,
     libvlc_marquee_Position,
@@ -200,10 +258,6 @@ type
     libvlc_marquee_Timeout,
     libvlc_marquee_X,
     libvlc_marquee_Y
-  );
-
-  libvlc_video_marquee_string_option_t = (
-      libvlc_marquee_Text
   );
 
   libvlc_video_logo_option_t = (
@@ -510,15 +564,17 @@ type
       procedure VLC_SetAudioTrack(iTrack : Integer);
       function  VLC_GetAudioTrack() : Integer;
       function  VLC_GetAudioTrackList() : String;
-      procedure VLC_ToggleMute();
+      procedure VLC_SetMute(Activate : Boolean);
+      function  VLC_GetMute() : Boolean;
       procedure VLC_SetVolume(Level : Integer);
       function  VLC_GetVolume() : Integer;
 
       procedure VLC_AppendLastLogMsgs(List : TStringList; DoDateTime : Boolean);
       function  VLC_GetStats() : libvlc_media_stats_t;
-
+      
       procedure VLC_AdjustVideo(Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
       procedure VLC_ResetVideo();
+      procedure VLC_SetMarquee(Text : String; Color, Opac, Pos, Refresh, Size, Timeout, X, Y : Integer);
 
       procedure VLC_SetLogo(LogoFile : string);
 
@@ -694,10 +750,10 @@ type
       libvlc_get_fullscreen : function(p_media_player : Plibvlc_media_player_t) : Integer; cdecl;
 
       libvlc_video_set_deinterlace : procedure(p_media_player : Plibvlc_media_player_t; psz_mode : PChar); cdecl;
-      libvlc_video_get_marquee_int: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_int_option_t): Integer; cdecl;
-      libvlc_video_get_marquee_string: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_string_option_t): PAnsiChar; cdecl;
-      libvlc_video_set_marquee_int: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_int_option_t; i_val: Integer); cdecl;
-      libvlc_video_set_marquee_string: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_string_option_t; psz_text: PAnsiChar); cdecl;
+      libvlc_video_get_marquee_int: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_option_t): Integer; cdecl;
+      libvlc_video_get_marquee_string: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_option_t): PAnsiChar; cdecl;
+      libvlc_video_set_marquee_int: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_option_t; i_val: Integer); cdecl;
+      libvlc_video_set_marquee_string: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_marquee_option_t; psz_text: PAnsiChar); cdecl;
       libvlc_video_get_logo_int: function(p_mi: Plibvlc_media_player_t; option: libvlc_video_logo_option_t): Integer; cdecl;
       libvlc_video_set_logo_int: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_logo_option_t; value: Integer); cdecl;
       libvlc_video_set_logo_string: procedure(p_mi: Plibvlc_media_player_t; option: libvlc_video_logo_option_t; psz_value: PAnsiChar); cdecl;
@@ -1237,7 +1293,8 @@ begin
     FFormFS.Close;
     
     SetWindowPos(FFormFS.Handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE or SWP_NOMOVE or SWP_NOSIZE);
-
+    Application.ProcessMessages;
+    
     SetAParent(Panel.Handle, Panel.Parent.Handle, TForm(Panel.Parent).Monitor.Height, TForm(Panel.Parent).Monitor.Width);
 
     Panel.Top := FOldPanTop;
@@ -1267,6 +1324,7 @@ begin
     FFormFS.Show;
 
     SetWindowPos(FFormFS.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE or SWP_NOMOVE or SWP_NOSIZE);
+    Application.ProcessMessages;
 
     SetAParent(Panel.Handle, FFormFS.Handle, TForm(Panel.Parent).Monitor.Height, TForm(Panel.Parent).Monitor.Width);
 
@@ -1393,13 +1451,16 @@ begin
   libvlc_video_set_aspect_ratio(FPlayer, PChar(Mode));
 end;
 
-procedure TLibVLC.VLC_ToggleMute;
-// toggle volume
+procedure TLibVLC.VLC_SetMute(Activate : Boolean);
+// set mute on/off
 begin
   if not Assigned(FPlayer) then
     exit;
 
-  libvlc_audio_toggle_mute(FPlayer);
+  if not Activate then
+    libvlc_audio_set_mute(FPlayer, 0)
+  else
+    libvlc_audio_set_mute(FPlayer, 1);
 end;
 
 procedure TLibVLC.VLC_SetVolume (Level : Integer);
@@ -1664,6 +1725,7 @@ begin
 end;
 
 function TLibVLC.VLC_GetAudioTrackList: String;
+// get audio tracklist from current playback
 var
   Track : Plibvlc_track_description_t;
 begin
@@ -1688,6 +1750,35 @@ begin
     Track := Track.p_next;
   until not Assigned(Track);
   
+end;
+
+procedure TLibVLC.VLC_SetMarquee(Text: String; Color, Opac, Pos, Refresh, Size, Timeout, X, Y: Integer);
+// set marquee text
+begin
+  libvlc_video_set_marquee_string(FPlayer, libvlc_marquee_Text, PChar(Text));
+
+  // options
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Enabled, 1);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Color, Color);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Opacity, Opac);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Position, Pos);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Refresh, Refresh);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Size, Size);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Timeout, Timeout);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_X, X);
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Y, Y);  
+end;
+
+function TLibVLC.VLC_GetMute: Boolean;
+// read mute status
+begin
+  Result := false;
+
+  if not Assigned(FPlayer) then
+    exit;
+
+  if libvlc_audio_get_mute(FPlayer) = 1 then
+    Result := true
 end;
 
 { TFormFS }

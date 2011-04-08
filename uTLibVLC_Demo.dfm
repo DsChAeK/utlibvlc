@@ -274,7 +274,7 @@ object FrmMain: TFrmMain
   object MmoOptBase: TMemo
     Left = 394
     Top = 18
-    Width = 427
+    Width = 369
     Height = 187
     Anchors = [akTop, akRight]
     Lines.Strings = (
@@ -295,7 +295,7 @@ object FrmMain: TFrmMain
   object MmoOptPlay: TMemo
     Left = 394
     Top = 222
-    Width = 427
+    Width = 371
     Height = 193
     Anchors = [akTop, akRight]
     Lines.Strings = (
@@ -364,7 +364,7 @@ object FrmMain: TFrmMain
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
-      Text = 'http://192.168.0.111:31339/0,0x002C,0x00A3,0x0068,0x006A'
+      Text = 'http://192.168.0.111:31339/0,0x002F,0x00A7,0x0088'
     end
     object EdtUrlPlay: TEdit
       Left = 63
@@ -375,6 +375,15 @@ object FrmMain: TFrmMain
       TabOrder = 2
       Text = 'http://192.168.0.3:31339'
     end
+  end
+  object Button8: TButton
+    Left = 769
+    Top = 222
+    Width = 75
+    Height = 25
+    Caption = 'Set Marquee'
+    TabOrder = 5
+    OnClick = Button8Click
   end
   object TimerLog: TTimer
     Enabled = False
