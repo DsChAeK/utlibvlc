@@ -3,7 +3,7 @@
 //   URL:           http://www.dschaek.de
 //   Projekt:       uTLibVLC
 //   Lizenz:        Freeware
-//   Version:       2.0
+//   Version:       2.1
 //
 //   Aufgabe:       Wrapper for LibVLC v1.1 (or higher)
 //
@@ -25,6 +25,10 @@
 // ##############################################################################################
 //
 //   Changelog:
+//     30.05.2011, DsChAeK
+//       -added OnLogTimer() instead of VLC_AppendLastLogMsgs()
+//       -added up2date event codes as comment
+//       -added libvlc_test_event for testing events (not working!)
 //
 //     07.04.2011, DsChAeK
 //       -updated version to v2.0
@@ -166,53 +170,74 @@ type
     psz_header,              // optional header
     psz_message : PAnsiChar; // message
   end;
-  
+
   Plibvlc_log_message_t = ^libvlc_log_message_t;
 
   Plibvlc_event_manager_t = type Pointer;
 
-  libvlc_event_type_t = (libvlc_MediaMetaChanged,
-                          libvlc_MediaSubItemAdded,
-                          libvlc_MediaDurationChanged,
-                          libvlc_MediaPreparsedChanged,
-                          libvlc_MediaFreed,
-                          libvlc_MediaStateChanged,
+type  
+  libvlc_event_type_t = Integer;
 
-                          libvlc_MediaPlayerNothingSpecial,
-                          libvlc_MediaPlayerOpening,
-                          libvlc_MediaPlayerBuffering,
-                          libvlc_MediaPlayerPlaying,
-                          libvlc_MediaPlayerPaused,
-                          libvlc_MediaPlayerStopped,
-                          libvlc_MediaPlayerForward,
-                          libvlc_MediaPlayerBackward,
-                          libvlc_MediaPlayerEndReached,
-                          libvlc_MediaPlayerEncounteredError,
-                          libvlc_MediaPlayerTimeChanged,
-                          libvlc_MediaPlayerPositionChanged,
-                          libvlc_MediaPlayerSeekableChanged,
-                          libvlc_MediaPlayerPausableChanged,
+const
+  libvlc_test_event = $106;
 
-                          libvlc_MediaListItemAdded,
-                          libvlc_MediaListWillAddItem,
-                          libvlc_MediaListItemDeleted,
-                          libvlc_MediaListWillDeleteItem,
+(*  libvlc_event_type_t = (
+    libvlc_MediaMetaChanged, // 0
+    libvlc_MediaSubItemAdded,
+    libvlc_MediaDurationChanged,
+    libvlc_MediaParsedChanged,
+    libvlc_MediaFreed,
+    libvlc_MediaStateChanged,
 
-                          libvlc_MediaListViewItemAdded,
-                          libvlc_MediaListViewWillAddItem,
-                          libvlc_MediaListViewItemDeleted,
-                          libvlc_MediaListViewWillDeleteItem,
+    libvlc_MediaPlayerMediaChanged, // 0x100
+    libvlc_MediaPlayerNothingSpecial,
+    libvlc_MediaPlayerOpening,
+    libvlc_MediaPlayerBuffering,
+    libvlc_MediaPlayerPlaying,
+    libvlc_MediaPlayerPaused,
+    libvlc_MediaPlayerStopped,
+    libvlc_MediaPlayerForward,
+    libvlc_MediaPlayerBackward,
+    libvlc_MediaPlayerEndReached,
+    libvlc_MediaPlayerEncounteredError,
+    libvlc_MediaPlayerTimeChanged,
+    libvlc_MediaPlayerPositionChanged,
+    libvlc_MediaPlayerSeekableChanged,
+    libvlc_MediaPlayerPausableChanged,
+    libvlc_MediaPlayerTitleChanged,
+    libvlc_MediaPlayerSnapshotTaken,
+    libvlc_MediaPlayerLengthChanged,
 
-                          libvlc_MediaListPlayerPlayed,
-                          libvlc_MediaListPlayerNextItemSet,
-                          libvlc_MediaListPlayerStopped,
+    libvlc_MediaListItemAdded, // 0x200
+    libvlc_MediaListWillAddItem,
+    libvlc_MediaListItemDeleted,
+    libvlc_MediaListWillDeleteItem,
 
-                          libvlc_MediaDiscovererStarted,
-                          libvlc_MediaDiscovererEnded,
+    libvlc_MediaListViewItemAdded, // 0x300
+    libvlc_MediaListViewWillAddItem,
+    libvlc_MediaListViewItemDeleted,
+    libvlc_MediaListViewWillDeleteItem,
 
-                          libvlc_MediaPlayerTitleChanged,
-                          libvlc_MediaPlayerSnapshotTaken);
+    libvlc_MediaListPlayerPlayed, // 0x400
+    libvlc_MediaListPlayerNextItemSet,
+    libvlc_MediaListPlayerStopped,
 
+    libvlc_MediaDiscovererStarted, // 0x500
+    libvlc_MediaDiscovererEnded,
+
+    libvlc_VlmMediaAdded, // 0x600
+    libvlc_VlmMediaRemoved,
+    libvlc_VlmMediaChanged,
+    libvlc_VlmMediaInstanceStarted,
+    libvlc_VlmMediaInstanceStopped,
+    libvlc_VlmMediaInstanceStatusInit,
+    libvlc_VlmMediaInstanceStatusOpening,
+    libvlc_VlmMediaInstanceStatusPlaying,
+    libvlc_VlmMediaInstanceStatusPause,
+    libvlc_VlmMediaInstanceStatusEnd,
+    libvlc_VlmMediaInstanceStatusError);
+        *)
+type
   Plibvlc_media_t = type Pointer;
 
   libvlc_meta_t = (libvlc_meta_Title,
@@ -498,7 +523,11 @@ type
   TFormFS = class(TForm)
     procedure CreateParams(var Params: TCreateParams);override;
   end;
-  
+
+type
+  // log event 
+  TLogEvent = procedure(const log_message: libvlc_log_message_t) of object;
+
 type
   // main class
   TLibVLC = class(TObject)
@@ -511,8 +540,9 @@ type
       FLastError    : Integer;                // last error
 
       FLog          : Plibvlc_log_t;          // log
-      FIterator     : Plibvlc_log_iterator_t; // log iter
-
+      FLogTimer     : TTimer;                 // log timer
+      FLogEvent     : TLogEvent;              // log event
+      
       FPlayer       : Plibvlc_media_player_t; // media_player
       FMedia        : Plibvlc_media_t;        // media
       FMediaURL     : String;                 // media url
@@ -537,8 +567,10 @@ type
       procedure LoadFunctions;
 
       function  SetAParent(hWndChild, hWndNewParent: HWND; NewParentWidth, NewParentHeight: integer): boolean;
+      procedure OnLogTimer(Sender: TObject);
 
     public
+
       // public functions
       constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; PnlOutput : TPanel; Callback : libvlc_callback_t); overload;
       destructor  Destroy(); override;
@@ -569,7 +601,6 @@ type
       procedure VLC_SetVolume(Level : Integer);
       function  VLC_GetVolume() : Integer;
 
-      procedure VLC_AppendLastLogMsgs(List : TStringList; DoDateTime : Boolean);
       function  VLC_GetStats() : libvlc_media_stats_t;
       
       procedure VLC_AdjustVideo(Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
@@ -578,7 +609,6 @@ type
 
       procedure VLC_SetLogo(LogoFile : string);
 
-
       property  OldPanTop   : Integer read FOldPanTop    write FOldPanTop;
       property  OldPanLeft  : Integer read FOldPanLeft   write FOldPanLeft;
       property  OldPanHeight: Integer read FOldPanHeight write FOldPanHeight;
@@ -586,10 +616,12 @@ type
       property  PnlOutput : TPanel read FPnlOutput  write FPnlOutput;
       property  FormFS : TFormFS read FFormFS  write FFormFS;
       property  Fullscreen : Boolean read FFullscreen  write FFullscreen;
+      property  OnLog: TLogEvent read FLogEvent write FLogEvent;
 
       property  IsFullscreen: Boolean read FFullscreen;
       property  MediaURL: String read FMediaURL;
       property  Version: String read FVersion;
+
 
     public
       // libvlc functions
@@ -961,45 +993,15 @@ begin
 end;
 
 { TLibVLC }
-procedure TLibVLC.VLC_AppendLastLogMsgs(List: TStringList; DoDateTime : Boolean);
-var
-  i,Cnt : Integer;
-  Msg : libvlc_log_message_t;
-begin
-
-  if not Assigned(FLog) then
-    exit;
-
-  Cnt := libvlc_log_count(FLog);
-
-  FIterator := libvlc_log_get_iterator(FLog);
-
-  if not Assigned(FIterator) then
-    exit;
-
-  for i:=0 to Cnt-1 do begin
-    libvlc_log_iterator_next(FIterator, @Msg);
-
-    if not Assigned(@Msg) then
-      break;
-
-    if Assigned(List) then begin
-      if DoDateTime then
-        List.Append(FormatDateTime('hh:nn:ss:zzz', now)+', '+FName+': '+Msg.psz_message)
-      else
-        List.Append(FName+': '+Msg.psz_message);
-    end;
-  end;
-
-  libvlc_log_clear(FLog);
-end;
-
 destructor TLibVLC.Destroy;
 // free objects
 begin
   libvlc_log_close(FLog);
   libvlc_release(FLib);
 
+  if Assigned(FLogTimer) then
+    FLogTimer.Free;
+  
   if Assigned(FFormFS) then
     FFormFS.Free;
 end;
@@ -1520,6 +1522,10 @@ begin
   // init logging
   libvlc_set_log_verbosity(FLib, LogLevel);
   FLog := libvlc_log_open(FLib);
+  FLogTimer := TTimer.Create(nil);
+  FLogTimer.OnTimer := OnLogTimer;
+  FLogTimer.Interval := 100;
+  FLogTimer.Enabled := true;
 end;
 
 function TLibVLC.VLC_GetVersion: String;
@@ -1566,7 +1572,7 @@ procedure TLibVLC.VLC_PlayMedia(MediaURL: String; MediaOptions: TStringList; Pan
 // create new player and new media
 var
   i : Integer;
-//  Pevent_manager : Plibvlc_event_manager_t;
+  Pevent_manager : Plibvlc_event_manager_t;
 begin
   // media
   FMediaURL := MediaURL;
@@ -1599,12 +1605,15 @@ begin
 //  libvlc_video_set_key_input(FPlayer, 1);
 
   // Events (just a test right now, not working...)
-(*  Pevent_manager := libvlc_media_player_event_manager(FPlayer);
-  libvlc_event_attach(Pevent_manager,
-                      libvlc_MediaPlayerPlaying,
-                      FCallback,
-                      Pointer(Self));
-  *)
+  if Assigned(FCallback) then begin
+    Pevent_manager := libvlc_media_player_event_manager(FPlayer);
+    libvlc_event_attach(Pevent_manager,
+                        libvlc_test_event,
+                        FCallback,
+                        nil);
+  //                      Pointer(Self));
+  end;
+
   libvlc_media_player_play(FPlayer);
 end;
 
@@ -1779,6 +1788,29 @@ begin
 
   if libvlc_audio_get_mute(FPlayer) = 1 then
     Result := true
+end;
+
+procedure TLibVLC.OnLogTimer(Sender: TObject);
+// timer log event
+var
+  AIterator: Plibvlc_log_iterator_t;
+  AMessage: libvlc_log_message_t;
+begin
+  if not Assigned(FLog) then
+    exit;
+
+  if (libvlc_log_count(FLog) > 0) then begin
+    AIterator := libvlc_log_get_iterator(FLog);
+
+    if Assigned(FLogEvent) then begin
+      while (libvlc_log_iterator_has_next(AIterator) > 0) do begin
+        libvlc_log_iterator_next(AIterator, @AMessage);
+        FLogEvent(AMessage);
+      end;
+    end;
+
+    libvlc_log_clear(FLog);
+  end;
 end;
 
 { TFormFS }
