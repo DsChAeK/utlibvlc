@@ -49,14 +49,12 @@ type
     BtnPlay: TButton;
     BtnPause: TButton;
     BtnStop: TButton;
-    TimerLog: TTimer;
     Label1: TLabel;
     MmoOptBase: TMemo;
     Label3: TLabel;
     Label6: TLabel;
     MmoOptPlay: TMemo;
     BtnStartPlay: TButton;
-    BtnFullscreen: TButton;
     Panel2: TPanel;
     Label2: TLabel;
     Label4: TLabel;
@@ -64,11 +62,7 @@ type
     EdtURLBase: TEdit;
     EdtUrlPlay: TEdit;
     BtnTrack: TButton;
-    BtnSnapshot: TButton;
-    BtnDeinterlace: TButton;
     Button2: TButton;
-    Button3: TButton;
-    Button4: TButton;
     Button1: TButton;
     Button5: TButton;
     SpinEdit1: TSpinEdit;
@@ -83,15 +77,18 @@ type
     Label7: TLabel;
     EdtDelay: TSpinEdit;
     Button6: TButton;
-    Button7: TButton;
     SpinEdit2: TSpinEdit;
     Label8: TLabel;
     Button8: TButton;
+    BtnFullscreen: TButton;
+    Button7: TButton;
+    BtnSnapshot: TButton;
+    BtnDeinterlace: TButton;
+    Button3: TButton;
+    Button4: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-
-    procedure TimerLogTimer(Sender: TObject);
 
     procedure BtnStopClick(Sender: TObject);
     procedure BtnPauseClick(Sender: TObject);
@@ -129,7 +126,11 @@ type
     function  MakeCdeclCallback(const Method: TMethod; StackSize: Shortint): Pointer;
     procedure FreeCdeclCallback(Callback: Pointer);
     procedure IsPlaying(p_event : Plibvlc_event_t; userdata : Pointer);cdecl;
-    procedure OnEvents ( Sender : TObject;  MediaEvent : plibvlc_event_t );
+    procedure OnEventsBase ( Sender : TObject;  MediaEvent : plibvlc_event_t );
+    procedure OnEventsPlay ( Sender : TObject;  MediaEvent : plibvlc_event_t );
+
+    procedure OnLogVLCBase(const log_message: libvlc_log_message_t);
+    procedure OnLogVLCPlay(const log_message: libvlc_log_message_t);
 
   public
     { Public-Deklarationen }
@@ -155,37 +156,27 @@ var
 implementation
 
 {$R *.DFM}
-procedure vlcCallBack(p_event : Plibvlc_event_t; userdata : Pointer); cdecl;
+procedure vlcCallBackBase(p_event : Plibvlc_event_t; userdata : Pointer); cdecl;
 begin
   if ( (NIL <> p_event) and (NIL <> userdata) ) then
-    (TFrmMain(userdata)).OnEvents( userdata, p_event );
+    (TFrmMain(userdata)).OnEventsBase( userdata, p_event );
+end;
+
+procedure vlcCallBackPlay(p_event : Plibvlc_event_t; userdata : Pointer); cdecl;
+begin
+  if ( (NIL <> p_event) and (NIL <> userdata) ) then
+    (TFrmMain(userdata)).OnEventsPlay( userdata, p_event );
 end;
 
 procedure TFrmMain.FormCreate(Sender: TObject);
 begin
+
   // create cdecl function pointer
-//  FOnIsPlaying := TOnIsPlaying(MakeCdeclCallback(TMethod(FMethodOnIsPlaying), 8));
-//  FMethodOnIsPlaying := IsPlaying;
+ // FOnIsPlaying := TOnIsPlaying(MakeCdeclCallback(TMethod(FMethodOnIsPlaying), 8));
+ // FMethodOnIsPlaying := IsPlaying;
 
   // test cdecl function pointer
-//  FOnIsPlaying(nil, nil);
-end;
-
-procedure TFrmMain.TimerLogTimer(Sender: TObject);
-begin
-  
-  try
-  
-    if Assigned(VLC_Play) then
-      label1.Caption := 'read_bytes: '+FloatToStr(VLC_Play.VLC_GetStats().i_read_bytes);
-    if Assigned(VLC_Base) then
-      VLC_Base.VLC_AppendLastLogMsgs(TStringList(Memo1.Lines), true);
-    if Assigned(VLC_Play) then
-      VLC_Play.VLC_AppendLastLogMsgs(TStringList(Memo1.Lines), true);
-
-  except
-    TimerLog.Enabled:=false;
-  end;
+  //FOnIsPlaying(nil, nil);
 end;
 
 procedure TFrmMain.BtnStopClick(Sender: TObject);
@@ -247,10 +238,12 @@ begin
     VLC_Base.Free;
   end;
 
-  if FileExists('libvlc.dll') then
-    VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 4, nil, VlcCallback)
+  if FileExists('libvlc.dll') then begin
+    VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 4, nil, VlcCallbackBase);
+    VLC_Base.OnLog := OnLogVLCBase;
+  end
   else
-    VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, nil, VLCCallback);
+    VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, nil, VlcCallbackBase);
 
   LogStr(VLC_Base.libvlc_get_version);
 end;
@@ -259,7 +252,9 @@ procedure TFrmMain.PrepareAndStart_Play;
 var
   i : Integer;
   Params : array[0..25] of PAnsiChar;
+  Pevent_manager : Plibvlc_event_manager_t;
 begin
+
   for i := 0 to 25 do begin
     Params[i] := '';
   end;
@@ -276,19 +271,11 @@ begin
   end;
 
   if FileExists('libvlc.dll') then
-    VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, pan_Video, VlcCallback)
+    VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, pan_Video, VlcCallbackPlay)
   else
-    VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 3, pan_Video, VlcCallback);
+    VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 3, pan_Video, VlcCallbackPlay);
 
-
-
-  // Events
-(*  Pevent_manager := VLC.Lib.libvlc_media_player_event_manager(FPlayer_Base);
-  VLC.Lib.libvlc_event_attach(Pevent_manager,
-                           libvlc_MediaPlayerPlaying,
-                           vlcCallBack,
-                           Pointer(Self));
-  *)
+//   VLC_Play.OnLog := OnLogVLCPlay;
 
 //  VLC_Play.VLC_CreatePlayer();
 
@@ -383,8 +370,6 @@ end;
 
 procedure TFrmMain.BtnInitClick(Sender: TObject);
 begin
-  TimerLog.Enabled := true;
-
   LogStr('project: prepare base');
   PrepareAndStart_Base;
   LogStr('project: prepare play');
@@ -534,9 +519,14 @@ begin
   VLC_Play.VLC_ToggleFullscreen(pan_Video, nil);
 end;
 
-procedure TFrmMain.OnEvents(Sender: TObject; MediaEvent: plibvlc_event_t);
+procedure TFrmMain.OnEventsBase(Sender: TObject; MediaEvent: plibvlc_event_t);
 begin
-  ShowMessage('event');
+  ShowMessage('event vlc_base');
+end;
+
+procedure TFrmMain.OnEventsPlay(Sender: TObject; MediaEvent: plibvlc_event_t);
+begin
+  ShowMessage('event vlc_play');
 end;
 
 procedure TFrmMain.BtnTrackClick(Sender: TObject);
@@ -623,8 +613,6 @@ begin
 
   EdtURLBase.Text := DlgOpen.Files.Text;
 
-  TimerLog.Enabled := true;
-
   LogStr('project: prepare base');
   PrepareAndStart_Base;
   LogStr('project: prepare play');
@@ -664,6 +652,18 @@ end;
 procedure TFrmMain.Button8Click(Sender: TObject);
 begin                            // FF0000
   vlc_play.VLC_SetMarquee('TEST', 16711680, 100, 6, 0, 50, 5000, 50, 50);
+end;
+
+procedure TFrmMain.OnLogVLCBase(const log_message: libvlc_log_message_t);
+begin
+  Memo1.Lines.Append(FormatDateTime('vlc_base, hh:nn:ss:zzz', now)+', typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
+  SendMessage(Memo1.Handle,WM_VSCROLL,SB_BOTTOM,0);
+end;
+
+procedure TFrmMain.OnLogVLCPlay(const log_message: libvlc_log_message_t);
+begin
+  Memo1.Lines.Append(FormatDateTime('vlc_play, hh:nn:ss:zzz', now)+', typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
+  SendMessage(Memo1.Handle,WM_VSCROLL,SB_BOTTOM,0);
 end;
 
 end.

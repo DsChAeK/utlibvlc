@@ -1,10 +1,10 @@
 object FrmMain: TFrmMain
-  Left = 194
-  Top = 193
+  Left = 332
+  Top = 360
   BorderStyle = bsSingle
   Caption = 'VLC Testsuite'
-  ClientHeight = 500
-  ClientWidth = 846
+  ClientHeight = 504
+  ClientWidth = 700
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,24 +21,24 @@ object FrmMain: TFrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 390
-    Top = 422
+    Left = 382
+    Top = 358
     Width = 64
     Height = 13
     Anchors = [akTop, akRight]
     Caption = 'read_bytes: 0'
   end
   object Label3: TLabel
-    Left = 394
-    Top = 4
+    Left = 382
+    Top = 2
     Width = 63
     Height = 13
     Anchors = [akTop, akRight]
     Caption = 'Base Options'
   end
   object Label6: TLabel
-    Left = 394
-    Top = 208
+    Left = 382
+    Top = 156
     Width = 59
     Height = 13
     Anchors = [akTop, akRight]
@@ -47,8 +47,8 @@ object FrmMain: TFrmMain
   object pan_Video: TPanel
     Left = 3
     Top = 2
-    Width = 383
-    Height = 203
+    Width = 374
+    Height = 229
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     Color = clBlack
@@ -57,8 +57,8 @@ object FrmMain: TFrmMain
   end
   object Panel1: TPanel
     Left = 2
-    Top = 438
-    Width = 846
+    Top = 442
+    Width = 700
     Height = 62
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
@@ -129,41 +129,14 @@ object FrmMain: TFrmMain
       TabOrder = 4
       OnClick = BtnStartPlayClick
     end
-    object BtnFullscreen: TButton
-      Left = 594
-      Top = 3
-      Width = 75
-      Height = 27
-      Caption = 'Fullscreen'
-      TabOrder = 5
-      OnClick = BtnFullscreenClick
-    end
     object BtnTrack: TButton
       Left = 514
       Top = 3
       Width = 75
       Height = 27
       Caption = 'Audio Tracks'
-      TabOrder = 6
+      TabOrder = 5
       OnClick = BtnTrackClick
-    end
-    object BtnSnapshot: TButton
-      Left = 672
-      Top = 3
-      Width = 75
-      Height = 27
-      Caption = 'Snapshot'
-      TabOrder = 7
-      OnClick = BtnSnapshotClick
-    end
-    object BtnDeinterlace: TButton
-      Left = 672
-      Top = 33
-      Width = 75
-      Height = 25
-      Caption = 'Deinterlace'
-      TabOrder = 8
-      OnClick = BtnDeinterlaceClick
     end
     object Button2: TButton
       Left = 84
@@ -171,26 +144,8 @@ object FrmMain: TFrmMain
       Width = 75
       Height = 25
       Caption = 'IsPlay Play'
-      TabOrder = 9
+      TabOrder = 6
       OnClick = Button2Click
-    end
-    object Button3: TButton
-      Left = 756
-      Top = 3
-      Width = 75
-      Height = 25
-      Caption = 'Crop 4:3'
-      TabOrder = 10
-      OnClick = Button3Click
-    end
-    object Button4: TButton
-      Left = 756
-      Top = 32
-      Width = 75
-      Height = 25
-      Caption = 'AR 16:9'
-      TabOrder = 11
-      OnClick = Button4Click
     end
     object Button1: TButton
       Left = 3
@@ -198,7 +153,7 @@ object FrmMain: TFrmMain
       Width = 75
       Height = 25
       Caption = 'IsPlay Base'
-      TabOrder = 12
+      TabOrder = 7
       OnClick = Button1Click
     end
     object Button5: TButton
@@ -207,7 +162,7 @@ object FrmMain: TFrmMain
       Width = 75
       Height = 25
       Caption = 'Mute'
-      TabOrder = 13
+      TabOrder = 8
       OnClick = Button5Click
     end
     object SpinEdit1: TSpinEdit
@@ -217,7 +172,7 @@ object FrmMain: TFrmMain
       Height = 22
       MaxValue = 200
       MinValue = 0
-      TabOrder = 14
+      TabOrder = 9
       Value = 0
       OnChange = SpinEdit1Change
     end
@@ -227,7 +182,7 @@ object FrmMain: TFrmMain
       Width = 75
       Height = 27
       Caption = 'Open && Play'
-      TabOrder = 15
+      TabOrder = 10
       OnClick = BtnOpenClick
     end
     object EdtDelay: TSpinEdit
@@ -238,7 +193,7 @@ object FrmMain: TFrmMain
       Increment = 500
       MaxValue = 10000
       MinValue = 0
-      TabOrder = 16
+      TabOrder = 11
       Value = 2000
     end
     object Button6: TButton
@@ -247,17 +202,8 @@ object FrmMain: TFrmMain
       Width = 93
       Height = 27
       Caption = 'Play Base URL'
-      TabOrder = 17
+      TabOrder = 12
       OnClick = Button6Click
-    end
-    object Button7: TButton
-      Left = 594
-      Top = 34
-      Width = 75
-      Height = 25
-      Caption = 'SetLogo'
-      TabOrder = 18
-      OnClick = Button7Click
     end
     object SpinEdit2: TSpinEdit
       Left = 464
@@ -266,75 +212,68 @@ object FrmMain: TFrmMain
       Height = 22
       MaxValue = 200
       MinValue = 0
-      TabOrder = 19
+      TabOrder = 13
       Value = 0
       OnChange = SpinEdit2Change
     end
   end
   object MmoOptBase: TMemo
-    Left = 394
-    Top = 18
-    Width = 369
-    Height = 187
+    Left = 382
+    Top = 16
+    Width = 311
+    Height = 133
     Anchors = [akTop, akRight]
     Lines.Strings = (
-      
-        ':sout=#duplicate{dst=std{access=http,mux=ts,dst=192.168.0.3:3133' +
-        '9} '
-      ':sout-keep'
+      ':sout=#http{mux=ts,dst=192.168.0.3:31339}'
       ':sout-all'
-      ':udp-caching=200'
+      ':http-caching=1000'
+      ':udp-caching=250'
       ':high-priority'
       ':sout-ts-es-id-pid'
       ':ts-es-id-pid'
-      ':http-reconnect'
-      ':http-caching=1500')
+      ':http-reconnect')
     ScrollBars = ssVertical
     TabOrder = 2
   end
   object MmoOptPlay: TMemo
-    Left = 394
-    Top = 222
-    Width = 371
-    Height = 193
+    Left = 382
+    Top = 170
+    Width = 309
+    Height = 181
     Anchors = [akTop, akRight]
     Lines.Strings = (
       ':deinterlace=1'
-      ':video-filter=adjust'
-      ':contrast=1.000'
-      ':brightness=1.000'
-      ':hue=0'
-      ':saturation=1.000'
-      ':gamma=1.000'
       ':deinterlace-mode=mean'
       ':vout='
       ':high-priority'
       ':input-record-path='
-      ':http-caching=1500'
       ':aspect-ratio=default'
       ':crop=default'
       ':no-fullscreen'
-      ':no-video-title-show')
+      ':no-video-title-show'
+      ':audio-track-id=0x0088'
+      ':http-caching='
+      ':http-reconnect')
     ScrollBars = ssVertical
     TabOrder = 3
   end
   object Panel2: TPanel
     Left = 0
-    Top = 207
-    Width = 387
-    Height = 230
+    Top = 234
+    Width = 377
+    Height = 207
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 4
     object Label2: TLabel
       Left = 6
-      Top = 184
+      Top = 159
       Width = 49
       Height = 13
       Caption = 'Base URL'
     end
     object Label4: TLabel
       Left = 6
-      Top = 208
+      Top = 183
       Width = 45
       Height = 13
       Caption = 'Play URL'
@@ -342,8 +281,8 @@ object FrmMain: TFrmMain
     object Memo1: TMemo
       Left = 1
       Top = 1
-      Width = 385
-      Height = 175
+      Width = 375
+      Height = 134
       Align = alTop
       Anchors = [akLeft, akTop, akRight, akBottom]
       Font.Charset = OEM_CHARSET
@@ -359,17 +298,17 @@ object FrmMain: TFrmMain
     end
     object EdtURLBase: TEdit
       Left = 63
-      Top = 181
-      Width = 317
+      Top = 156
+      Width = 307
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
-      Text = 'http://192.168.0.111:31339/0,0x002F,0x00A7,0x0088'
+      Text = 'http://192.168.0.111:31339/0,0x002C,0x00A3,0x0068,0x006A'
     end
     object EdtUrlPlay: TEdit
       Left = 63
-      Top = 205
-      Width = 317
+      Top = 180
+      Width = 307
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
@@ -377,24 +316,78 @@ object FrmMain: TFrmMain
     end
   end
   object Button8: TButton
-    Left = 769
-    Top = 222
+    Left = 615
+    Top = 382
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Set Marquee'
     TabOrder = 5
     OnClick = Button8Click
   end
-  object TimerLog: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = TimerLogTimer
-    Left = 576
-    Top = 298
+  object BtnFullscreen: TButton
+    Left = 382
+    Top = 381
+    Width = 75
+    Height = 27
+    Anchors = [akRight, akBottom]
+    Caption = 'Fullscreen'
+    TabOrder = 6
+    OnClick = BtnFullscreenClick
+  end
+  object Button7: TButton
+    Left = 382
+    Top = 412
+    Width = 75
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'SetLogo'
+    TabOrder = 7
+    OnClick = Button7Click
+  end
+  object BtnSnapshot: TButton
+    Left = 460
+    Top = 381
+    Width = 75
+    Height = 27
+    Anchors = [akRight, akBottom]
+    Caption = 'Snapshot'
+    TabOrder = 8
+    OnClick = BtnSnapshotClick
+  end
+  object BtnDeinterlace: TButton
+    Left = 460
+    Top = 411
+    Width = 75
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Deinterlace'
+    TabOrder = 9
+    OnClick = BtnDeinterlaceClick
+  end
+  object Button3: TButton
+    Left = 538
+    Top = 381
+    Width = 75
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'Crop 4:3'
+    TabOrder = 10
+    OnClick = Button3Click
+  end
+  object Button4: TButton
+    Left = 538
+    Top = 410
+    Width = 75
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'AR 16:9'
+    TabOrder = 11
+    OnClick = Button4Click
   end
   object MainMenu1: TMainMenu
-    Left = 519
-    Top = 298
+    Left = 653
+    Top = 296
     object File1: TMenuItem
       Caption = 'File'
       object Close1: TMenuItem
@@ -411,7 +404,7 @@ object FrmMain: TFrmMain
     end
   end
   object DlgOpen: TOpenDialog
-    Left = 474
-    Top = 411
+    Left = 710
+    Top = 7
   end
 end
