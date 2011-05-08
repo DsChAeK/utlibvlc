@@ -256,6 +256,7 @@ object FrmMain: TFrmMain
       ':http-reconnect')
     ScrollBars = ssBoth
     TabOrder = 3
+    WordWrap = False
   end
   object Panel2: TPanel
     Left = 0
