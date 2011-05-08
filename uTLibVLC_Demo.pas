@@ -58,7 +58,7 @@ type
     Panel2: TPanel;
     Label2: TLabel;
     Label4: TLabel;
-    Memo1: TMemo;
+    MemoPlay: TMemo;
     EdtURLBase: TEdit;
     EdtUrlPlay: TEdit;
     BtnTrack: TButton;
@@ -86,6 +86,8 @@ type
     BtnDeinterlace: TButton;
     Button3: TButton;
     Button4: TButton;
+    MemoBase: TMemo;
+    Timer1: TTimer;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -115,6 +117,7 @@ type
     procedure Button7Click(Sender: TObject);
     procedure SpinEdit1Change(Sender: TObject);
     procedure Button8Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -181,25 +184,39 @@ end;
 
 procedure TFrmMain.BtnStopClick(Sender: TObject);
 begin
-  LogStr('stop: play');
+  if not Assigned(VLC_Play) then
+    exit;
+
+  LogStr('project: stop playback');
   VLC_Play.VLC_StopMedia;
-  LogStr('stop: base');
-  if Assigned(VLC_Base) then
-    VLC_Base.VLC_StopMedia;
+
+  if not Assigned(VLC_Base) then
+    exit;
+    
+  LogStr('project: stop vlc_base');
+  VLC_Base.VLC_StopMedia;
 end;
 
 procedure TFrmMain.BtnPauseClick(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_Pause;
 end;
 
 procedure TFrmMain.BtnPlayClick(Sender: TObject);
 begin
+  if not Assigned(VLC_Base) then
+    exit;
+
   LogStr('project: start base');
-  if Assigned(VLC_Base) then
-    VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
+  VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
   LogStr('project: wait '+IntToStr(EdtDelay.Value)+'s...');
   Delay(EdtDelay.Value);
+
+  if not Assigned(VLC_Play) then
+    exit;
 
   LogStr('project: start play');
   VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
@@ -276,7 +293,7 @@ begin
   else
     VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 3, pan_Video, VlcCallbackPlay);
 
-//   VLC_Play.OnLog := OnLogVLCPlay;
+   VLC_Play.OnLog := OnLogVLCPlay;
 
 //  VLC_Play.VLC_CreatePlayer();
 
@@ -371,6 +388,11 @@ end;
 
 procedure TFrmMain.BtnInitClick(Sender: TObject);
 begin
+  if Assigned(VLC_Play) then begin
+    if VLC_Play.VLC_IsPlaying then
+      exit;
+  end;
+
   LogStr('project: prepare base');
   PrepareAndStart_Base;
   LogStr('project: prepare play');
@@ -505,6 +527,9 @@ end;
 
 procedure TFrmMain.BtnFullscreenClick(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_ToggleFullscreen(pan_Video, nil);
   Delay(3000);
   VLC_Play.VLC_ToggleFullscreen(pan_Video, nil);
@@ -532,7 +557,7 @@ end;
 
 procedure TFrmMain.BtnTrackClick(Sender: TObject);
 begin
-  Memo1.Lines.Append(VLC_Play.VLC_GetAudioTrackList());
+  MemoPlay.Lines.Append(VLC_Play.VLC_GetAudioTrackList());
 end;
 
 procedure TFrmMain.BtnFScreenAutoClick(Sender: TObject);
@@ -550,16 +575,25 @@ end;
 
 procedure TFrmMain.BtnSnapshotClick(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_TakeSnapshot('c:\test.png', 0, 0);
 end;
 
 procedure TFrmMain.BtnDeinterlaceClick(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_SetDeinterlaceMode('discard');
 end;
 
 procedure TFrmMain.Button1Click(Sender: TObject);
 begin
+  if not Assigned(VLC_Base) then
+    exit;
+
   if VLC_Base.VLC_IsPlaying then
     ShowMEssage('true')
   else
@@ -568,6 +602,9 @@ end;
 
 procedure TFrmMain.Button2Click(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   if VLC_Play.VLC_IsPlaying then
     ShowMEssage('true')
   else
@@ -576,21 +613,33 @@ end;
 
 procedure TFrmMain.Button3Click(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+    
   VLC_Play.VLC_SetCropMode('4:3');
 end;
 
 procedure TFrmMain.Button4Click(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_SetARMode('16:9');
 end;
 
 procedure TFrmMain.Button5Click(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_SetMute(not VLC_Play.VLC_GetMute);
 end;
 
 procedure TFrmMain.SpinEdit2Change(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_SetAudioTrack(SpinEdit2.Value)
 end;
 
@@ -601,18 +650,26 @@ end;
 
 procedure TFrmMain.Stop1Click(Sender: TObject);
 begin
-  LogStr('stop: play');
+  LogStr('project: stop playback');
   VLC_Play.VLC_Stop;
-  LogStr('stop: base');
+  LogStr('project: stop vlc_base');
   if Assigned(VLC_Base) then
     VLC_Base.VLC_Stop;
 end;
 
 procedure TFrmMain.BtnOpenClick(Sender: TObject);
 begin
+  if Assigned(VLC_Play) then begin
+    if VLC_Play.VLC_IsPlaying then
+      exit;
+  end;
+
   DlgOpen.Execute;
 
-  EdtURLBase.Text := DlgOpen.Files.Text;
+  EdtURLBase.Text := Trim(DlgOpen.Files.Text);
+
+  if DlgOpen.Files.Text = '' then
+    exit;
 
   LogStr('project: prepare base');
   PrepareAndStart_Base;
@@ -630,6 +687,11 @@ end;
 
 procedure TFrmMain.Button6Click(Sender: TObject);
 begin
+  if Assigned(VLC_Play) then begin
+    if VLC_Play.VLC_IsPlaying then
+      exit;
+  end;
+
   LogStr('project: start play');
   PrepareAndStart_Play;
   VLC_Play.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptPlay.Lines), nil);
@@ -637,34 +699,57 @@ end;
 
 procedure TFrmMain.LogStr(Text: String);
 begin
-  Memo1.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+', '+Text); 
+  MemoBase.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+', '+Text);
 end;
 
 procedure TFrmMain.Button7Click(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+
   VLC_Play.VLC_SetLogo('c:\test.png');
 end;
 
 procedure TFrmMain.SpinEdit1Change(Sender: TObject);
 begin
+  if not Assigned(VLC_Play) then
+    exit;
+    
   VLC_Play.VLC_SetVolume(SpinEdit1.Value)
 end;
 
 procedure TFrmMain.Button8Click(Sender: TObject);
-begin                            // FF0000
+begin
+  if not Assigned(VLC_Play) then
+    exit;
+                                  // FF0000
   vlc_play.VLC_SetMarquee('TEST', 16711680, 100, 6, 0, 50, 5000, 50, 50);
 end;
 
 procedure TFrmMain.OnLogVLCBase(const log_message: libvlc_log_message_t);
 begin
-  Memo1.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+'vlc_base, typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
-  SendMessage(Memo1.Handle,WM_VSCROLL,SB_BOTTOM,0);
+  MemoBase.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+' vlc_base, typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
+  SendMessage(MemoBase.Handle,WM_VSCROLL,SB_BOTTOM,0);
 end;
 
 procedure TFrmMain.OnLogVLCPlay(const log_message: libvlc_log_message_t);
 begin
-  Memo1.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+'vlc_play, typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
-  SendMessage(Memo1.Handle,WM_VSCROLL,SB_BOTTOM,0);
+  MemoPlay.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+' vlc_play, typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
+  SendMessage(MemoPlay.Handle,WM_VSCROLL,SB_BOTTOM,0);
+end;
+
+procedure TFrmMain.Timer1Timer(Sender: TObject);
+begin
+  if not Assigned(VLC_Play) then
+    exit;
+
+  if not VLC_Play.VLC_IsPlaying() then
+    exit;
+
+  try
+    Label1.Caption := 'Bitrate: '+FloatToStr(Round(VLC_Play.VLC_GetStats().f_demux_bitrate*1000)) + ' kb/s';
+  except
+  end;
 end;
 
 end.
