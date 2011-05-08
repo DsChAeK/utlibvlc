@@ -1,6 +1,6 @@
 object FrmMain: TFrmMain
-  Left = 332
-  Top = 360
+  Left = 111
+  Top = 141
   BorderStyle = bsSingle
   Caption = 'VLC Testsuite'
   ClientHeight = 504
@@ -224,7 +224,7 @@ object FrmMain: TFrmMain
     Height = 133
     Anchors = [akTop, akRight]
     Lines.Strings = (
-      ':sout=#http{mux=ts,dst=192.168.0.3:31339}'
+      ':sout=#http{mux=ts,dst=192.168.0.5:31339}'
       ':sout-all'
       ':http-caching=1000'
       ':udp-caching=250'
@@ -232,8 +232,9 @@ object FrmMain: TFrmMain
       ':sout-ts-es-id-pid'
       ':ts-es-id-pid'
       ':http-reconnect')
-    ScrollBars = ssVertical
+    ScrollBars = ssBoth
     TabOrder = 2
+    WordWrap = False
   end
   object MmoOptPlay: TMemo
     Left = 382
@@ -251,10 +252,9 @@ object FrmMain: TFrmMain
       ':crop=default'
       ':no-fullscreen'
       ':no-video-title-show'
-      ':audio-track-id=0x0088'
       ':http-caching='
       ':http-reconnect')
-    ScrollBars = ssVertical
+    ScrollBars = ssBoth
     TabOrder = 3
   end
   object Panel2: TPanel
@@ -312,7 +312,7 @@ object FrmMain: TFrmMain
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
-      Text = 'http://192.168.0.3:31339'
+      Text = 'http://192.168.0.5:31339'
     end
   end
   object Button8: TButton
