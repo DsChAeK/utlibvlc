@@ -1,9 +1,9 @@
 object FrmMain: TFrmMain
-  Left = 111
-  Top = 141
+  Left = 204
+  Top = 161
   BorderStyle = bsSingle
-  Caption = 'VLC Testsuite'
-  ClientHeight = 504
+  Caption = 'VLC Testsuite -> demo using one or two vlc instances'
+  ClientHeight = 506
   ClientWidth = 700
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -22,11 +22,11 @@ object FrmMain: TFrmMain
   TextHeight = 13
   object Label1: TLabel
     Left = 382
-    Top = 358
-    Width = 64
+    Top = 374
+    Width = 67
     Height = 13
     Anchors = [akTop, akRight]
-    Caption = 'read_bytes: 0'
+    Caption = 'Bitrate: 0 kb/s'
   end
   object Label3: TLabel
     Left = 382
@@ -38,7 +38,7 @@ object FrmMain: TFrmMain
   end
   object Label6: TLabel
     Left = 382
-    Top = 156
+    Top = 173
     Width = 59
     Height = 13
     Anchors = [akTop, akRight]
@@ -48,7 +48,7 @@ object FrmMain: TFrmMain
     Left = 3
     Top = 2
     Width = 374
-    Height = 229
+    Height = 231
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     Color = clBlack
@@ -57,29 +57,32 @@ object FrmMain: TFrmMain
   end
   object Panel1: TPanel
     Left = 2
-    Top = 442
+    Top = 453
     Width = 700
-    Height = 62
+    Height = 53
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 1
     object Label5: TLabel
-      Left = 444
-      Top = 9
+      Left = 547
+      Top = 8
       Width = 15
       Height = 13
       Caption = 'Vol'
     end
     object Label7: TLabel
-      Left = 162
-      Top = 39
+      Left = 2
+      Top = 33
       Width = 27
       Height = 13
+      Hint = 'delay between vlc_base and vlc_play'
       Caption = 'Delay'
+      ParentShowHint = False
+      ShowHint = True
     end
     object Label8: TLabel
-      Left = 433
-      Top = 36
+      Left = 537
+      Top = 32
       Width = 28
       Height = 13
       Caption = 'Track'
@@ -87,87 +90,90 @@ object FrmMain: TFrmMain
     object BtnInit: TButton
       Left = 3
       Top = 3
-      Width = 75
-      Height = 27
-      Caption = 'Init'
+      Width = 88
+      Height = 21
+      Hint = 'start vlc_base, wait delay and start vlc_play'
+      Caption = 'Start (Base/Play)'
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 0
       OnClick = BtnInitClick
     end
     object BtnPlay: TButton
-      Left = 84
+      Left = 249
       Top = 3
-      Width = 75
-      Height = 27
+      Width = 40
+      Height = 21
       Caption = 'Play'
       TabOrder = 1
       OnClick = BtnPlayClick
     end
     object BtnPause: TButton
-      Left = 165
+      Left = 306
       Top = 3
-      Width = 75
-      Height = 27
+      Width = 40
+      Height = 21
       Caption = 'Pause'
       TabOrder = 2
       OnClick = BtnPauseClick
     end
     object BtnStop: TButton
-      Left = 246
+      Left = 362
       Top = 3
-      Width = 75
-      Height = 27
+      Width = 40
+      Height = 21
       Caption = 'Stop'
       TabOrder = 3
       OnClick = BtnStopClick
     end
     object BtnStartPlay: TButton
-      Left = 332
+      Left = 436
       Top = 4
-      Width = 94
-      Height = 27
+      Width = 63
+      Height = 21
       Caption = 'Start Test'
       TabOrder = 4
       OnClick = BtnStartPlayClick
     end
     object BtnTrack: TButton
-      Left = 514
-      Top = 3
+      Left = 618
+      Top = 2
       Width = 75
-      Height = 27
+      Height = 21
       Caption = 'Audio Tracks'
       TabOrder = 5
       OnClick = BtnTrackClick
     end
     object Button2: TButton
-      Left = 84
-      Top = 32
+      Left = 327
+      Top = 29
       Width = 75
-      Height = 25
+      Height = 21
       Caption = 'IsPlay Play'
       TabOrder = 6
       OnClick = Button2Click
     end
     object Button1: TButton
-      Left = 3
-      Top = 32
-      Width = 75
-      Height = 25
+      Left = 249
+      Top = 29
+      Width = 74
+      Height = 21
       Caption = 'IsPlay Base'
       TabOrder = 7
       OnClick = Button1Click
     end
     object Button5: TButton
-      Left = 513
-      Top = 33
+      Left = 618
+      Top = 29
       Width = 75
-      Height = 25
+      Height = 21
       Caption = 'Mute'
       TabOrder = 8
       OnClick = Button5Click
     end
     object SpinEdit1: TSpinEdit
-      Left = 465
-      Top = 5
+      Left = 568
+      Top = 4
       Width = 43
       Height = 22
       MaxValue = 200
@@ -177,37 +183,43 @@ object FrmMain: TFrmMain
       OnChange = SpinEdit1Change
     end
     object BtnOpen: TButton
-      Left = 246
-      Top = 31
-      Width = 75
-      Height = 27
-      Caption = 'Open && Play'
+      Left = 117
+      Top = 4
+      Width = 106
+      Height = 21
+      Hint = 'Open any file/url you want'
+      Caption = 'Open (Base/Play)'
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 10
       OnClick = BtnOpenClick
     end
     object EdtDelay: TSpinEdit
-      Left = 193
-      Top = 35
+      Left = 41
+      Top = 29
       Width = 50
       Height = 22
+      Hint = 'delay between vlc_base and vlc_play'
       Increment = 500
       MaxValue = 10000
       MinValue = 0
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 11
       Value = 2000
     end
     object Button6: TButton
-      Left = 332
-      Top = 33
-      Width = 93
-      Height = 27
-      Caption = 'Play Base URL'
+      Left = 117
+      Top = 29
+      Width = 106
+      Height = 21
+      Caption = 'Play (Base Only)'
       TabOrder = 12
       OnClick = Button6Click
     end
     object SpinEdit2: TSpinEdit
-      Left = 464
-      Top = 33
+      Left = 568
+      Top = 29
       Width = 43
       Height = 22
       MaxValue = 200
@@ -221,7 +233,7 @@ object FrmMain: TFrmMain
     Left = 382
     Top = 16
     Width = 311
-    Height = 133
+    Height = 150
     Anchors = [akTop, akRight]
     Lines.Strings = (
       ':sout=#http{mux=ts,dst=192.168.0.5:31339}'
@@ -238,7 +250,7 @@ object FrmMain: TFrmMain
   end
   object MmoOptPlay: TMemo
     Left = 382
-    Top = 170
+    Top = 187
     Width = 309
     Height = 181
     Anchors = [akTop, akRight]
@@ -260,30 +272,36 @@ object FrmMain: TFrmMain
   end
   object Panel2: TPanel
     Left = 0
-    Top = 234
+    Top = 236
     Width = 377
-    Height = 207
+    Height = 215
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 4
     object Label2: TLabel
       Left = 6
-      Top = 159
+      Top = 168
       Width = 49
       Height = 13
+      Hint = 
+        'plays a url or file and generates (default option!) a http strea' +
+        'm on 31339'
       Caption = 'Base URL'
+      ParentShowHint = False
+      ShowHint = True
     end
     object Label4: TLabel
       Left = 6
-      Top = 183
+      Top = 192
       Width = 45
       Height = 13
+      Hint = 'plays the http stream generated by vlc_base'
       Caption = 'Play URL'
     end
-    object Memo1: TMemo
+    object MemoPlay: TMemo
       Left = 1
-      Top = 1
+      Top = 81
       Width = 375
-      Height = 134
+      Height = 80
       Align = alTop
       Anchors = [akLeft, akTop, akRight, akBottom]
       Font.Charset = OEM_CHARSET
@@ -299,28 +317,52 @@ object FrmMain: TFrmMain
     end
     object EdtURLBase: TEdit
       Left = 63
-      Top = 156
+      Top = 165
       Width = 307
       Height = 21
+      Hint = 
+        'plays a url or file and generates (default option!) a http strea' +
+        'm on 31339'
       Anchors = [akLeft, akTop, akRight]
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 1
       Text = 'http://192.168.0.111:31339/0,0x002C,0x00A3,0x0068,0x006A'
     end
     object EdtUrlPlay: TEdit
       Left = 63
-      Top = 180
+      Top = 189
       Width = 307
       Height = 21
+      Hint = 'plays the http stream generated by vlc_base'
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
       Text = 'http://192.168.0.5:31339'
     end
+    object MemoBase: TMemo
+      Left = 1
+      Top = 1
+      Width = 375
+      Height = 80
+      Align = alTop
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      Font.Charset = OEM_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -8
+      Font.Name = 'Terminal'
+      Font.Style = []
+      Lines.Strings = (
+        '')
+      ParentFont = False
+      ScrollBars = ssVertical
+      TabOrder = 3
+    end
   end
   object Button8: TButton
-    Left = 615
-    Top = 382
+    Left = 617
+    Top = 399
     Width = 75
-    Height = 25
+    Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Set Marquee'
     TabOrder = 5
@@ -328,9 +370,9 @@ object FrmMain: TFrmMain
   end
   object BtnFullscreen: TButton
     Left = 382
-    Top = 381
+    Top = 399
     Width = 75
-    Height = 27
+    Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Fullscreen'
     TabOrder = 6
@@ -338,9 +380,9 @@ object FrmMain: TFrmMain
   end
   object Button7: TButton
     Left = 382
-    Top = 412
+    Top = 426
     Width = 75
-    Height = 25
+    Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'SetLogo'
     TabOrder = 7
@@ -348,9 +390,9 @@ object FrmMain: TFrmMain
   end
   object BtnSnapshot: TButton
     Left = 460
-    Top = 381
+    Top = 399
     Width = 75
-    Height = 27
+    Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Snapshot'
     TabOrder = 8
@@ -358,9 +400,9 @@ object FrmMain: TFrmMain
   end
   object BtnDeinterlace: TButton
     Left = 460
-    Top = 411
+    Top = 425
     Width = 75
-    Height = 25
+    Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Deinterlace'
     TabOrder = 9
@@ -368,9 +410,9 @@ object FrmMain: TFrmMain
   end
   object Button3: TButton
     Left = 538
-    Top = 381
+    Top = 399
     Width = 75
-    Height = 25
+    Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Crop 4:3'
     TabOrder = 10
@@ -378,17 +420,17 @@ object FrmMain: TFrmMain
   end
   object Button4: TButton
     Left = 538
-    Top = 410
+    Top = 424
     Width = 75
-    Height = 25
+    Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'AR 16:9'
     TabOrder = 11
     OnClick = Button4Click
   end
   object MainMenu1: TMainMenu
-    Left = 653
-    Top = 296
+    Left = 614
+    Top = 269
     object File1: TMenuItem
       Caption = 'File'
       object Close1: TMenuItem
@@ -407,5 +449,11 @@ object FrmMain: TFrmMain
   object DlgOpen: TOpenDialog
     Left = 710
     Top = 7
+  end
+  object Timer1: TTimer
+    Interval = 100
+    OnTimer = Timer1Timer
+    Left = 459
+    Top = 369
   end
 end
