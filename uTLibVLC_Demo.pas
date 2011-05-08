@@ -240,10 +240,11 @@ begin
 
   if FileExists('libvlc.dll') then begin
     VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 4, nil, VlcCallbackBase);
-    VLC_Base.OnLog := OnLogVLCBase;
   end
   else
     VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, nil, VlcCallbackBase);
+
+  VLC_Base.OnLog := OnLogVLCBase;
 
   LogStr(VLC_Base.libvlc_get_version);
 end;
@@ -656,13 +657,13 @@ end;
 
 procedure TFrmMain.OnLogVLCBase(const log_message: libvlc_log_message_t);
 begin
-  Memo1.Lines.Append(FormatDateTime('vlc_base, hh:nn:ss:zzz', now)+', typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
+  Memo1.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+'vlc_base, typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
   SendMessage(Memo1.Handle,WM_VSCROLL,SB_BOTTOM,0);
 end;
 
 procedure TFrmMain.OnLogVLCPlay(const log_message: libvlc_log_message_t);
 begin
-  Memo1.Lines.Append(FormatDateTime('vlc_play, hh:nn:ss:zzz', now)+', typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
+  Memo1.Lines.Append(FormatDateTime('hh:nn:ss:zzz', now)+'vlc_play, typ: '+log_message.psz_type+' name: '+log_message.psz_name+' header: '+log_message.psz_header+' msg: '+log_message.psz_message);
   SendMessage(Memo1.Handle,WM_VSCROLL,SB_BOTTOM,0);
 end;
 
