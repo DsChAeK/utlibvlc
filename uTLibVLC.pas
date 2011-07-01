@@ -3,7 +3,7 @@
 //   URL:           http://www.dschaek.de
 //   Projekt:       uTLibVLC
 //   Lizenz:        Freeware
-//   Version:       2.1
+//   Version:       2.2
 //
 //   Aufgabe:       Wrapper for LibVLC v1.1 (or higher)
 //
@@ -25,13 +25,21 @@
 // ##############################################################################################
 //
 //   Changelog:
-//     30.05.2011, DsChAeK
+//     02.07.2011, DsChAeK, v2.2
+//       -events are working now!(thx to Jurassic Pork)
+//        -> all events are registered to FCallback
+//        -> you can use FUserdata if needed (not tested by me)
+//        -> updated event records/types/constants
+//        -> added VLC_GetEventString()      
+//       -removed property: Fullscreen -> IsFullscreen already exists
+//       -added a few more comments
+//
+//     30.05.2011, DsChAeK, v2.1
 //       -added OnLogTimer() instead of VLC_AppendLastLogMsgs()
 //       -added up2date event codes as comment
 //       -added libvlc_test_event for testing events (not working!)
 //
-//     07.04.2011, DsChAeK
-//       -updated version to v2.0
+//     07.04.2011, DsChAeK, v2.0
 //       -added constant arrays for mux/vcodecs/acodecs which are offered by VLC GUI
 //       -added VLC_SetMute()/VLC_GetMute()
 //       -removed VLC_ToggleMute()
@@ -179,65 +187,178 @@ type
   libvlc_event_type_t = Integer;
 
 const
-  libvlc_test_event = $106;
+  libvlc_MediaMetaChanged              = $0;
+  libvlc_MediaSubItemAdded             = $1;
+  libvlc_MediaDurationChanged          = $2;
+  libvlc_MediaParsedChanged            = $3;
+  libvlc_MediaFreed                    = $4;
+  libvlc_MediaStateChanged             = $5;
 
-(*  libvlc_event_type_t = (
-    libvlc_MediaMetaChanged, // 0
-    libvlc_MediaSubItemAdded,
-    libvlc_MediaDurationChanged,
-    libvlc_MediaParsedChanged,
-    libvlc_MediaFreed,
-    libvlc_MediaStateChanged,
+  libvlc_MediaPlayerMediaChanged       = $100;
+  libvlc_MediaPlayerNothingSpecial     = $101;
+  libvlc_MediaPlayerOpening            = $102;
+  libvlc_MediaPlayerBuffering          = $103;
+  libvlc_MediaPlayerPlaying            = $104;
+  libvlc_MediaPlayerPaused             = $105;
+  libvlc_MediaPlayerStopped            = $106;
+  libvlc_MediaPlayerForward            = $107;
+  libvlc_MediaPlayerBackward           = $108;
+  libvlc_MediaPlayerEndReached         = $109;
+  libvlc_MediaPlayerEncounteredError   = $110;
+  libvlc_MediaPlayerTimeChanged        = $111;
+  libvlc_MediaPlayerPositionChanged    = $112;
+  libvlc_MediaPlayerSeekableChanged    = $113;
+  libvlc_MediaPlayerPausableChanged    = $114;
+  libvlc_MediaPlayerTitleChanged       = $115;
+  libvlc_MediaPlayerSnapshotTaken      = $116;
+  libvlc_MediaPlayerLengthChanged      = $117;
 
-    libvlc_MediaPlayerMediaChanged, // 0x100
-    libvlc_MediaPlayerNothingSpecial,
-    libvlc_MediaPlayerOpening,
-    libvlc_MediaPlayerBuffering,
-    libvlc_MediaPlayerPlaying,
-    libvlc_MediaPlayerPaused,
-    libvlc_MediaPlayerStopped,
-    libvlc_MediaPlayerForward,
-    libvlc_MediaPlayerBackward,
-    libvlc_MediaPlayerEndReached,
-    libvlc_MediaPlayerEncounteredError,
-    libvlc_MediaPlayerTimeChanged,
-    libvlc_MediaPlayerPositionChanged,
-    libvlc_MediaPlayerSeekableChanged,
-    libvlc_MediaPlayerPausableChanged,
-    libvlc_MediaPlayerTitleChanged,
-    libvlc_MediaPlayerSnapshotTaken,
-    libvlc_MediaPlayerLengthChanged,
+  libvlc_MediaListItemAdded            = $200;
+  libvlc_MediaListWillAddItem          = $201;
+  libvlc_MediaListItemDeleted          = $202;
+  libvlc_MediaListWillDeleteItem       = $203;
 
-    libvlc_MediaListItemAdded, // 0x200
-    libvlc_MediaListWillAddItem,
-    libvlc_MediaListItemDeleted,
-    libvlc_MediaListWillDeleteItem,
+  libvlc_MediaListViewItemAdded        = $300;
+  libvlc_MediaListViewWillAddItem      = $301;
+  libvlc_MediaListViewItemDeleted      = $302;
+  libvlc_MediaListViewWillDeleteItem   = $303;
 
-    libvlc_MediaListViewItemAdded, // 0x300
-    libvlc_MediaListViewWillAddItem,
-    libvlc_MediaListViewItemDeleted,
-    libvlc_MediaListViewWillDeleteItem,
+  libvlc_MediaListPlayerPlayed         = $400;
+  libvlc_MediaListPlayerNextItemSet    = $401;
+  libvlc_MediaListPlayerStopped        = $402;
 
-    libvlc_MediaListPlayerPlayed, // 0x400
-    libvlc_MediaListPlayerNextItemSet,
-    libvlc_MediaListPlayerStopped,
+  libvlc_MediaDiscovererStarted        = $500;
+  libvlc_MediaDiscovererEnded          = $501;
 
-    libvlc_MediaDiscovererStarted, // 0x500
-    libvlc_MediaDiscovererEnded,
+  libvlc_VlmMediaAdded                 = $600;
+  libvlc_VlmMediaRemoved               = $601;
+  libvlc_VlmMediaChanged               = $602;
+  libvlc_VlmMediaInstanceStarted       = $603;
+  libvlc_VlmMediaInstanceStopped       = $604;
+  libvlc_VlmMediaInstanceStatusInit    = $605;
+  libvlc_VlmMediaInstanceStatusOpening = $606;
+  libvlc_VlmMediaInstanceStatusPlaying = $607;
+  libvlc_VlmMediaInstanceStatusPause   = $608;
+  libvlc_VlmMediaInstanceStatusEnd     = $609;
+  libvlc_VlmMediaInstanceStatusError   = $610;
 
-    libvlc_VlmMediaAdded, // 0x600
-    libvlc_VlmMediaRemoved,
-    libvlc_VlmMediaChanged,
-    libvlc_VlmMediaInstanceStarted,
-    libvlc_VlmMediaInstanceStopped,
-    libvlc_VlmMediaInstanceStatusInit,
-    libvlc_VlmMediaInstanceStatusOpening,
-    libvlc_VlmMediaInstanceStatusPlaying,
-    libvlc_VlmMediaInstanceStatusPause,
-    libvlc_VlmMediaInstanceStatusEnd,
-    libvlc_VlmMediaInstanceStatusError);
-        *)
+const
+  libvlc_events : array[0..47] of Integer = (
+                                              libvlc_MediaMetaChanged              ,
+                                              libvlc_MediaSubItemAdded             ,
+                                              libvlc_MediaDurationChanged          ,
+                                              libvlc_MediaParsedChanged            ,
+                                              libvlc_MediaFreed                    ,
+                                              libvlc_MediaStateChanged             ,
+
+                                              libvlc_MediaPlayerMediaChanged       ,
+                                              libvlc_MediaPlayerNothingSpecial     ,
+                                              libvlc_MediaPlayerOpening            ,
+                                              libvlc_MediaPlayerBuffering          ,
+                                              libvlc_MediaPlayerPlaying            ,
+                                              libvlc_MediaPlayerPaused             ,
+                                              libvlc_MediaPlayerStopped            ,
+                                              libvlc_MediaPlayerForward            ,
+                                              libvlc_MediaPlayerBackward           ,
+                                              libvlc_MediaPlayerEndReached         ,
+                                              libvlc_MediaPlayerEncounteredError   ,
+                                              libvlc_MediaPlayerTimeChanged        ,
+                                              libvlc_MediaPlayerPositionChanged    ,
+                                              libvlc_MediaPlayerSeekableChanged    ,
+                                              libvlc_MediaPlayerPausableChanged    ,
+                                              libvlc_MediaPlayerTitleChanged       ,
+                                              libvlc_MediaPlayerSnapshotTaken      ,
+                                              libvlc_MediaPlayerLengthChanged      ,
+
+                                              libvlc_MediaListItemAdded            ,
+                                              libvlc_MediaListWillAddItem          ,
+                                              libvlc_MediaListItemDeleted          ,
+                                              libvlc_MediaListWillDeleteItem       ,
+
+                                              libvlc_MediaListViewItemAdded        ,
+                                              libvlc_MediaListViewWillAddItem      ,
+                                              libvlc_MediaListViewItemDeleted      ,
+                                              libvlc_MediaListViewWillDeleteItem   ,
+
+                                              libvlc_MediaListPlayerPlayed         ,
+                                              libvlc_MediaListPlayerNextItemSet    ,
+                                              libvlc_MediaListPlayerStopped        ,
+                                                                             
+                                              libvlc_MediaDiscovererStarted        ,
+                                              libvlc_MediaDiscovererEnded          ,
+
+                                              libvlc_VlmMediaAdded                 ,
+                                              libvlc_VlmMediaRemoved               ,
+                                              libvlc_VlmMediaChanged               ,
+                                              libvlc_VlmMediaInstanceStarted       ,
+                                              libvlc_VlmMediaInstanceStopped       ,
+                                              libvlc_VlmMediaInstanceStatusInit    ,
+                                              libvlc_VlmMediaInstanceStatusOpening ,
+                                              libvlc_VlmMediaInstanceStatusPlaying ,
+                                              libvlc_VlmMediaInstanceStatusPause   ,
+                                              libvlc_VlmMediaInstanceStatusEnd     ,
+                                              libvlc_VlmMediaInstanceStatusError
+                                             );
+
+  libvlc_events_text : array[0..47] of String = (
+                                              'libvlc_MediaMetaChanged'              ,
+                                              'libvlc_MediaSubItemAdded'             ,
+                                              'libvlc_MediaDurationChanged'          ,
+                                              'libvlc_MediaParsedChanged'            ,
+                                              'libvlc_MediaFreed'                    ,
+                                              'libvlc_MediaStateChanged'             ,
+
+                                              'libvlc_MediaPlayerMediaChanged'       ,
+                                              'libvlc_MediaPlayerNothingSpecial'     ,
+                                              'libvlc_MediaPlayerOpening'            ,
+                                              'libvlc_MediaPlayerBuffering'          ,
+                                              'libvlc_MediaPlayerPlaying'            ,
+                                              'libvlc_MediaPlayerPaused'             ,
+                                              'libvlc_MediaPlayerStopped'            ,
+                                              'libvlc_MediaPlayerForward'            ,
+                                              'libvlc_MediaPlayerBackward'           ,
+                                              'libvlc_MediaPlayerEndReached'         ,
+                                              'libvlc_MediaPlayerEncounteredError'   ,
+                                              'libvlc_MediaPlayerTimeChanged'        ,
+                                              'libvlc_MediaPlayerPositionChanged'    ,
+                                              'libvlc_MediaPlayerSeekableChanged'    ,
+                                              'libvlc_MediaPlayerPausableChanged'    ,
+                                              'libvlc_MediaPlayerTitleChanged'       ,
+                                              'libvlc_MediaPlayerSnapshotTaken'      ,
+                                              'libvlc_MediaPlayerLengthChanged'      ,
+
+                                              'libvlc_MediaListItemAdded'            ,
+                                              'libvlc_MediaListWillAddItem'          ,
+                                              'libvlc_MediaListItemDeleted'          ,
+                                              'libvlc_MediaListWillDeleteItem'       ,
+
+                                              'libvlc_MediaListViewItemAdded'        ,
+                                              'libvlc_MediaListViewWillAddItem'      ,
+                                              'libvlc_MediaListViewItemDeleted'      ,
+                                              'libvlc_MediaListViewWillDeleteItem'   ,
+
+                                              'libvlc_MediaListPlayerPlayed'         ,
+                                              'libvlc_MediaListPlayerNextItemSet'    ,
+                                              'libvlc_MediaListPlayerStopped'        ,
+                                              
+                                              'libvlc_MediaDiscovererStarted'        ,
+                                              'libvlc_MediaDiscovererEnded'          ,
+
+                                              'libvlc_VlmMediaAdded'                 ,
+                                              'libvlc_VlmMediaRemoved'               ,
+                                              'libvlc_VlmMediaChanged'               ,
+                                              'libvlc_VlmMediaInstanceStarted'       ,
+                                              'libvlc_VlmMediaInstanceStopped'       ,
+                                              'libvlc_VlmMediaInstanceStatusInit'    ,
+                                              'libvlc_VlmMediaInstanceStatusOpening' ,
+                                              'libvlc_VlmMediaInstanceStatusPlaying' ,
+                                              'libvlc_VlmMediaInstanceStatusPause'   ,
+                                              'libvlc_VlmMediaInstanceStatusEnd'     ,
+                                              'libvlc_VlmMediaInstanceStatusError'
+                                             );
+                                             
 type
+
   Plibvlc_media_t = type Pointer;
 
   libvlc_meta_t = (libvlc_meta_Title,
@@ -258,7 +379,7 @@ type
                     libvlc_meta_ArtworkURL,
                     libvlc_meta_TrackID);
 
-  libvlc_state_t = (libvlc_NothingSpecial,//=0,
+  libvlc_state_t = (libvlc_NothingSpecial,
                     libvlc_Opening,
                     libvlc_Buffering,
                     libvlc_Playing,
@@ -422,6 +543,10 @@ type
     new_state : libvlc_state_t;
   end;
 
+  Tmedia_player_buffering = record
+    new_cache : Single;
+  end;
+      
   Tmedia_player_position_changed = record
     new_position : Single;
   end;
@@ -462,6 +587,14 @@ type
     index : Integer;
   end;
 
+  Tmedia_list_player_next_item_set = record
+    item : Plibvlc_media_t;
+  end;
+
+  Tmedia_player_snapshot_taken = record
+    psz_filename : PAnsiChar;
+  end;
+
   Tmedia_list_view_item_added = record
     item : Plibvlc_media_t;
     index : Integer;
@@ -482,8 +615,17 @@ type
     index : Integer;
   end;
 
-  Tmedia_player_snapshot_taken = record
-    psz_filename : PAnsiChar;
+  Tmedia_player_length_changed = record
+    new_length : libvlc_time_t;
+  end;
+
+  Tvlm_media_event = record
+    psz_media_name : PAnsiChar;
+    psz_instance_name : PAnsiChar;
+  end;
+
+  Tmedia_player_media_changed = record
+    new_media : Plibvlc_media_t;
   end;
 
   libvlc_event_t = record
@@ -496,25 +638,26 @@ type
       3 : (media_preparsed_changed : Tmedia_preparsed_changed);
       4 : (media_freed : Tmedia_freed);
       5 : (media_state_changed : Tmedia_state_changed);
-      6 : (media_player_position_changed : Tmedia_player_position_changed);
-      7 : (media_player_time_changed : Tmedia_player_time_changed);
-      8 : (media_player_title_changed : Tmedia_player_title_changed);
-      9 : (media_player_seekable_changed : Tmedia_player_seekable_changed);
-      10: (media_player_pausable_changed : Tmedia_player_pausable_changed);
-      11: (media_list_item_added : Tmedia_list_item_added);
-      12: (media_list_will_add_item : Tmedia_list_will_add_item);
-      13: (media_list_item_deleted : Tmedia_list_item_deleted);
-      14: (media_list_will_delete_item : Tmedia_list_will_delete_item);
-      15: (media_list_view_item_added : Tmedia_list_view_item_added);
-      16: (media_list_view_will_add_item : Tmedia_list_view_will_add_item);
-      17: (media_list_view_item_deleted : Tmedia_list_view_item_deleted);
-      18: (media_list_view_will_delete_item : Tmedia_list_view_will_delete_item);
-      19: (media_player_snapshot_taken : Tmedia_player_snapshot_taken);
+      6 : (media_player_buffering : Tmedia_player_buffering);
+      7 : (media_player_position_changed : Tmedia_player_position_changed);
+      8 : (media_player_time_changed : Tmedia_player_time_changed);
+      9 : (media_player_title_changed : Tmedia_player_title_changed);
+      10: (media_player_seekable_changed : Tmedia_player_seekable_changed);
+      11: (media_player_pausable_changed : Tmedia_player_pausable_changed);
+      12: (media_list_item_added : Tmedia_list_item_added);
+      13: (media_list_will_add_item : Tmedia_list_will_add_item);
+      14: (media_list_item_deleted : Tmedia_list_item_deleted);
+      15: (media_list_will_delete_item : Tmedia_list_will_delete_item);
+      16: (media_list_player_next_item_set : Tmedia_list_player_next_item_set);
+      17: (media_player_snapshot_taken : Tmedia_player_snapshot_taken);
+      18: (media_player_length_changed : Tmedia_player_length_changed);
+      19: (vlm_media_event : Tvlm_media_event);
+      20: (media_player_media_changed : Tmedia_player_media_changed);
   end;
 
   Plibvlc_event_t = ^libvlc_event_t;
 
-  libvlc_callback_t = procedure(p_event : Plibvlc_event_t; userdata : Pointer); cdecl;
+  libvlc_callback_t = procedure(p_event : Pointer; userdata : Pointer); cdecl;
 
   Plibvlc_media_discoverer_t = type Pointer;
 
@@ -558,7 +701,9 @@ type
       FOldPanHeight : Integer;                // orig panel pos
       FOldPanWidth  : Integer;                // orig panel pos
 
-      FCallback     : libvlc_callback_t;      // callback for events
+      FCallback     : Pointer;                // callback pointer for events
+      FUserdata     : Pointer;                // pointer for events userdata
+      
       FBackground   : TPanel;                 // background for fullscreen mode
       FBackgroundParent : TWinControl;        // parent from background panel       
 
@@ -572,7 +717,7 @@ type
     public
 
       // public functions
-      constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; PnlOutput : TPanel; Callback : libvlc_callback_t); overload;
+      constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; PnlOutput : TPanel; Callback, Userdata : Pointer); overload;
       destructor  Destroy(); override;
 
       function  VLC_GetLibPath : String;
@@ -602,6 +747,7 @@ type
       function  VLC_GetVolume() : Integer;
 
       function  VLC_GetStats() : libvlc_media_stats_t;
+      function  VLC_GetEventString(event : libvlc_event_t): String;
       
       procedure VLC_AdjustVideo(Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
       procedure VLC_ResetVideo();
@@ -609,19 +755,18 @@ type
 
       procedure VLC_SetLogo(LogoFile : string);
 
-      property  OldPanTop   : Integer read FOldPanTop    write FOldPanTop;
-      property  OldPanLeft  : Integer read FOldPanLeft   write FOldPanLeft;
-      property  OldPanHeight: Integer read FOldPanHeight write FOldPanHeight;
-      property  OldPanWidth : Integer read FOldPanWidth  write FOldPanWidth;
-      property  PnlOutput : TPanel read FPnlOutput  write FPnlOutput;
-      property  FormFS : TFormFS read FFormFS  write FFormFS;
-      property  Fullscreen : Boolean read FFullscreen  write FFullscreen;
-      property  OnLog: TLogEvent read FLogEvent write FLogEvent;
+      // properties
+      property  OldPanTop   : Integer read FOldPanTop    write FOldPanTop;    // video panel top before fullscreen
+      property  OldPanLeft  : Integer read FOldPanLeft   write FOldPanLeft;   // video panel left before fullscreen
+      property  OldPanHeight: Integer read FOldPanHeight write FOldPanHeight; // video panel height before fullscreen
+      property  OldPanWidth : Integer read FOldPanWidth  write FOldPanWidth;  // video panel width before fullscreen
+      property  PnlOutput : TPanel read FPnlOutput  write FPnlOutput;         // video panel
+      property  FormFS : TFormFS read FFormFS  write FFormFS;                 // fullscreen form
+      property  IsFullscreen : Boolean read FFullscreen  write FFullscreen;   // fullscreen indicator
+      property  OnLog: TLogEvent read FLogEvent write FLogEvent;              // logging callback function
 
-      property  IsFullscreen: Boolean read FFullscreen;
-      property  MediaURL: String read FMediaURL;
-      property  Version: String read FVersion;
-
+      property  MediaURL: String read FMediaURL;                              // current media url
+      property  Version: String read FVersion;                                // vlc version
 
     public
       // libvlc functions
@@ -1474,7 +1619,7 @@ begin
   libvlc_audio_set_volume(FPlayer, Level);
 end;
 
-constructor TLibVLC.Create(InstName, DLL: String; Params: array of PAnsiChar; LogLevel: Integer; PnlOutput: TPanel; Callback : libvlc_callback_t);
+constructor TLibVLC.Create(InstName, DLL: String; Params: array of PAnsiChar; LogLevel: Integer; PnlOutput: TPanel; Callback, Userdata : Pointer);
 // load libvlc.dll, init libvlc and init class, with video output!
 begin
   if (DLL = '') or (DLL = 'libvlc.dll') then
@@ -1511,9 +1656,14 @@ begin
   // callback
   FCallback := Callback;
 
+  // callback userdata
+  FUserdata := Userdata;
+
+  // check handle
   if FDllHandle = 0 then
      raise Exception.Create('load library failed!');
 
+  // load all dll function pointers
   LoadFunctions;
 
   // init libvlc instance
@@ -1604,14 +1754,16 @@ begin
 //  libvlc_video_set_mouse_input(FPlayer, 0); // mouse still always hidden...
 //  libvlc_video_set_key_input(FPlayer, 1);
 
-  // Events (just a test right now, not working...)
+  // register all events 
   if Assigned(FCallback) then begin
     Pevent_manager := libvlc_media_player_event_manager(FPlayer);
-    libvlc_event_attach(Pevent_manager,
-                        libvlc_test_event,
+
+    for i:=0 to sizeof(libvlc_events)-1 do begin
+      libvlc_event_attach(Pevent_manager,
+                        libvlc_events[i],
                         FCallback,
-                        nil);
-  //                      Pointer(Self));
+                        FUserdata);
+    end;
   end;
 
   libvlc_media_player_play(FPlayer);
@@ -1810,6 +1962,19 @@ begin
     end;
 
     libvlc_log_clear(FLog);
+  end;
+end;
+
+function TLibVLC.VLC_GetEventString(event: libvlc_event_t): String;
+// returns a event-string for a libvlc_event_t
+var
+  i : Integer;
+begin
+  for i:=0 to sizeof(libvlc_events)-1 do begin
+    if event._type = libvlc_events[i] then begin
+      Result := libvlc_events_text[i];
+      break;
+    end;
   end;
 end;
 
