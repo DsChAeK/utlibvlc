@@ -3,7 +3,7 @@
 //   URL:           http://www.dschaek.de
 //   Projekt:       uTLibVLC
 //   Lizenz:        Freeware
-//   Version:       2.2
+//   Version:       v2.4
 //
 //   Aufgabe:       Wrapper for LibVLC v1.1 (or higher)
 //
@@ -25,6 +25,13 @@
 // ##############################################################################################
 //
 //   Changelog:
+//     04.01.2015, DsChAeK, v2.4 for VLC 2.x Only
+//       -adaptions for Embercado XE6
+//       -new functions:  VLC_GetCropMode,VLC_SetARMode,VLC_SetChannel,VLC_GetChannel
+//
+//     03.02.2012, DsChAeK, v2.3 for VLC 2.x Only
+//       -Logging API is deprecated and not working anymore...there is no alternative!
+//
 //     02.07.2011, DsChAeK, v2.2
 //       -events are working now!(thx to Jurassic Pork)
 //        -> all events are registered to FCallback
@@ -95,7 +102,7 @@ unit uTLibVLC;
 interface
 
 uses
-  sysUtils, windows, controls,
+  sysUtils, windows, controls, Math,
 
   classes, extctrls, forms;
 
@@ -717,7 +724,7 @@ type
     public
 
       // public functions
-      constructor Create(InstName, DLL : String; Params : array of PAnsiChar; LogLevel : Integer; PnlOutput : TPanel; Callback, Userdata : Pointer); overload;
+      constructor Create(InstName, DLL : String; Params : array of PAnsiChar; ParamsCount:Integer ;LogLevel : Integer; PnlOutput : TPanel; Callback, Userdata : Pointer); overload;
       destructor  Destroy(); override;
 
       function  VLC_GetLibPath : String;
@@ -734,9 +741,14 @@ type
       procedure VLC_TakeSnapshot(Path : String; width, height : Integer);
       procedure VLC_SetDeinterlaceMode(Mode : String);
       procedure VLC_SetCropMode(Mode : String);
+      function  VLC_GetCropMode() : String;
       procedure VLC_SetARMode(Mode : String);
+      function  VLC_GetARMode() : String;
       procedure VLC_ToggleFullscreen(Panel : TPanel; Background: TPanel);overload;virtual;
       procedure VLC_ToggleFullscreen(Frame : TFrame; Background: TPanel);overload;
+
+      procedure VLC_SetChannel(Channel : Integer);
+      function  VLC_GetChannel() : Integer;
 
       procedure VLC_SetAudioTrack(iTrack : Integer);
       function  VLC_GetAudioTrack() : Integer;
@@ -777,7 +789,7 @@ type
       libvlc_errmsg : function () : PAnsiChar; cdecl;
       libvlc_clearerr : procedure (); cdecl;
       libvlc_new : function(argc : Integer;
-                             argv : PChar) : Plibvlc_instance_t; cdecl;
+                             argv : PAnsiChar) : Plibvlc_instance_t; cdecl;
       libvlc_release : procedure(p_instance : Plibvlc_instance_t); cdecl;
       libvlc_retain : procedure(p_instance : Plibvlc_instance_t); cdecl;
       libvlc_add_intf : procedure(p_instalce : Plibvlc_instance_t;
@@ -1408,7 +1420,7 @@ begin
   if not Assigned(FPlayer) then
     exit;
 
-  libvlc_media_player_stop(FPlayer);
+  libvlc_media_player_stop(FPlayer); //-> VLC Stop Problem
 
   // wait until stop is really finished, because VLC_IsPlaying()
   // will return true during stopping
@@ -1520,6 +1532,16 @@ begin
     Result := true;
 end;
 
+procedure TLibVLC.VLC_SetChannel(Channel: Integer);
+begin
+  libvlc_audio_set_channel(FPlayer, Channel);
+end;
+
+function TLibVLC.VLC_GetChannel: Integer;
+begin
+  Result := libvlc_audio_get_channel(FPlayer);
+end;
+
 procedure TLibVLC.VLC_SetAudioTrack(iTrack: Integer);
 // set audio track
 begin
@@ -1549,11 +1571,13 @@ begin
   if not Assigned(FPnlOutput) then
     exit;
 
-  libvlc_video_take_snapshot(FPlayer, 0, PChar(Path), width, height);
+  libvlc_video_take_snapshot(FPlayer, 0, PAnsiChar(Path), width, height);
 end;
 
 procedure TLibVLC.VLC_SetDeinterlaceMode(Mode: String);
 // set video deinterlace mode
+var
+  MyMode : PChar;
 begin
   if not Assigned(FPlayer) then
     exit;
@@ -1561,7 +1585,12 @@ begin
   if not Assigned(FPnlOutput) then
     exit;
 
-  libvlc_video_set_deinterlace(FPlayer, PChar(Mode));
+   MyMode := StrAlloc(length(Mode) + 1);
+   StrPCopy(MyMode, Mode);
+
+   libvlc_video_set_deinterlace(FPlayer, MyMode);
+
+   StrDispose(MyMode);
 end;
 
 function TLibVLC.VLC_IsPlaying: Boolean;
@@ -1586,8 +1615,21 @@ begin
   if not Assigned(FPlayer) then
     exit;
 
-  libvlc_video_set_crop_geometry(FPlayer, PChar(Mode));
+  if (Mode = 'default') then
+    libvlc_video_set_crop_geometry(FPlayer, PAnsiChar(''))
+  else
+    libvlc_video_set_crop_geometry(FPlayer, PAnsiChar(Mode));
 end;
+
+function TLibVLC.VLC_GetCropMode() : String;
+// get video crop mode
+begin
+  if not Assigned(FPlayer) then
+    exit;
+
+  Result := libvlc_video_get_crop_geometry(FPlayer);
+end;
+
 
 procedure TLibVLC.VLC_SetARMode(Mode: String);
 // set video aspect ratio
@@ -1595,7 +1637,19 @@ begin
   if not Assigned(FPlayer) then
     exit;
 
-  libvlc_video_set_aspect_ratio(FPlayer, PChar(Mode));
+  if (Mode = 'default') then
+    libvlc_video_set_aspect_ratio(FPlayer, PAnsiChar(''))
+  else
+    libvlc_video_set_aspect_ratio(FPlayer, PAnsiChar(Mode));
+end;
+
+function TLibVLC.VLC_GetARMode() : String;
+// get video aspect ratio
+begin
+  if not Assigned(FPlayer) then
+    exit;
+
+  Result := libvlc_video_get_aspect_ratio(FPlayer);
 end;
 
 procedure TLibVLC.VLC_SetMute(Activate : Boolean);
@@ -1619,7 +1673,7 @@ begin
   libvlc_audio_set_volume(FPlayer, Level);
 end;
 
-constructor TLibVLC.Create(InstName, DLL: String; Params: array of PAnsiChar; LogLevel: Integer; PnlOutput: TPanel; Callback, Userdata : Pointer);
+constructor TLibVLC.Create(InstName, DLL: String; Params: array of PAnsiChar; ParamsCount: Integer; LogLevel: Integer; PnlOutput: TPanel; Callback, Userdata : Pointer);
 // load libvlc.dll, init libvlc and init class, with video output!
 begin
   if (DLL = '') or (DLL = 'libvlc.dll') then
@@ -1667,7 +1721,7 @@ begin
   LoadFunctions;
 
   // init libvlc instance
-  FLib := libvlc_new(Length(Params), @Params[0]);
+  FLib := libvlc_new(ParamsCount, @Params[0]);
 
   // init logging
   libvlc_set_log_verbosity(FLib, LogLevel);
@@ -1708,9 +1762,9 @@ begin
   if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,'Software\VideoLAN\VLC',0,KEY_ALL_ACCESS,Handle)=ERROR_SUCCESS) then begin
 
     if RegQueryValueEx(Handle,'InstallDir',nil,@RegType,nil,@DataSize)=ERROR_SUCCESS then begin
-      SetLength(Result,Datasize);
+      SetLength(Result,Datasize div 2);
       RegQueryValueEx(Handle,'InstallDir',nil,@RegType,PByte(@Result[1]),@DataSize);
-      Result[DataSize]:='\';
+      Result[DataSize div 2]:='\';
     end;
 
     RegCloseKey(Handle);
@@ -1723,6 +1777,7 @@ procedure TLibVLC.VLC_PlayMedia(MediaURL: String; MediaOptions: TStringList; Pan
 var
   i : Integer;
   Pevent_manager : Plibvlc_event_manager_t;
+  Option : AnsiString;
 begin
   // media
   FMediaURL := MediaURL;
@@ -1736,7 +1791,8 @@ begin
   end;
 
   for i := 0 to FMediaOpt.Count-1 do begin
-    libvlc_media_add_option(FMedia, PChar(FMediaOpt.Strings[i]));
+    Option := Utf8Encode(FMediaOpt.Strings[i]);
+    libvlc_media_add_option(FMedia, PAnsiChar(Option));
   end;
 
   if not Assigned(FPlayer) then
@@ -1775,7 +1831,7 @@ var
   i : Integer;
 begin
   if Assigned(FPlayer) then begin
-    libvlc_media_player_stop(FPlayer);
+    libvlc_media_player_stop(FPlayer); //-> VLC Stop Problem
 
     // wait until stop is really finished
     for i:=0 to 10 do begin
@@ -1785,12 +1841,12 @@ begin
         Sleep(100);
     end;
 
-    libvlc_media_player_release(FPlayer);
+    libvlc_media_player_release(FPlayer);// -> VLC Stop Problem
     FPlayer := nil;
   end;
 
   if Assigned(FMedia) then begin
-    libvlc_media_release(FMedia);
+    libvlc_media_release(FMedia);//-> VLC Stop Problem
     FMedia := nil;
   end;
 end;
@@ -1819,12 +1875,12 @@ end;
 
 procedure TLibVLC.VLC_SetLogo(LogoFile: string);
 begin
-   libvlc_video_set_logo_int(FPlayer,libvlc_logo_enable, 1);
    libvlc_video_set_logo_string(FPlayer,libvlc_logo_file,PAnsiChar(LogoFile));
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_x,0);
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_y,0);
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_repeat,-1); // continuous?
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_opacity,255); // totally opaque
+   libvlc_video_set_logo_int(FPlayer,libvlc_logo_enable, 1);
 end;
 
 procedure TLibVLC.VLC_ToggleFullscreen(Frame: TFrame; Background: TPanel);
@@ -1916,8 +1972,6 @@ end;
 procedure TLibVLC.VLC_SetMarquee(Text: String; Color, Opac, Pos, Refresh, Size, Timeout, X, Y: Integer);
 // set marquee text
 begin
-  libvlc_video_set_marquee_string(FPlayer, libvlc_marquee_Text, PChar(Text));
-
   // options
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Enabled, 1);
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Color, Color);
@@ -1927,7 +1981,10 @@ begin
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Size, Size);
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Timeout, Timeout);
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_X, X);
-  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Y, Y);  
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Y, Y);
+
+  libvlc_video_set_marquee_string(FPlayer, libvlc_marquee_Text, PAnsiChar(Text));
+
 end;
 
 function TLibVLC.VLC_GetMute: Boolean;
@@ -1939,7 +1996,7 @@ begin
     exit;
 
   if libvlc_audio_get_mute(FPlayer) = 1 then
-    Result := true
+    Result := true;
 end;
 
 procedure TLibVLC.OnLogTimer(Sender: TObject);
