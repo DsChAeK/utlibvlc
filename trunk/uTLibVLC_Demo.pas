@@ -30,7 +30,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, ComCtrls, uTLibVLC, ScktComp, Spin, Menus;
+  ExtCtrls, StdCtrls, ComCtrls, uTLibVLC, ScktComp, Spin, Menus, Buttons;
 
 const
   ChrCRLF   = ^M^J;
@@ -88,6 +88,9 @@ type
     Button4: TButton;
     MemoBase: TMemo;
     Timer1: TTimer;
+    Label70: TLabel;
+    EdtLibVlc: TEdit;
+    Edit1: TEdit;
 
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
 
@@ -233,11 +236,16 @@ begin
     VLC_Base.Free;
   end;
 
-  if FileExists('libvlc.dll') then begin
-    VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 4, nil, @VlcCallbackBase, nil);
+  if EdtLibVlc.Text <> '' then begin
+    VLC_Base := TLibVLC.Create('vlc_base', EdtLibVlc.Text, Params, 1, nil, @VlcCallbackBase, nil);
   end
-  else
-    VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 3, nil, @VlcCallbackBase, nil);
+  else begin
+    if FileExists('libvlc.dll') then begin
+      VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 1, nil, @VlcCallbackBase, nil);
+    end
+    else
+      VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 1, nil, @VlcCallbackBase, nil);
+  end;
 
   VLC_Base.OnLog := OnLogVLCBase;
 
@@ -260,15 +268,27 @@ begin
   // quiet
   Params[1] := PAnsiChar('--quiet');
 
+  // no-video-title-show
+  Params[2] := PAnsiChar('--no-video-title-show');
+
+  // deinterlace
+  Params[4] := PAnsiChar('--video-filter=deinterlace'); // VLC v2.1.0, 06.04.2012: activates unknown deinterlace mode but not influenced by deinterlace-mode
+  Params[3] := PAnsiChar('--deinterlace-mode=yadif');   // VLC v2.1.0, 06.04.2012: not working right now!
+                                                        
   // Free
   if Assigned(VLC_Play) then begin
     VLC_Play.Free;
   end;
 
-  if FileExists('libvlc.dll') then
-    VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 3, pan_Video, @VlcCallbackPlay, nil)
-  else
-    VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 3, pan_Video, @VlcCallbackPlay, nil);
+  if EdtLibVlc.Text <> '' then begin
+    VLC_Play := TLibVLC.Create('vlc_play', EdtLibVlc.Text, Params, 0, pan_Video, @VlcCallbackBase, nil);
+  end
+  else begin
+    if FileExists('libvlc.dll') then
+      VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 0, pan_Video, @VlcCallbackPlay, nil)
+    else
+      VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 1, pan_Video, @VlcCallbackPlay, nil);
+  end;
 
    VLC_Play.OnLog := OnLogVLCPlay;
 
@@ -382,6 +402,7 @@ begin
   Delay(EdtDelay.Value);
 
   LogStrPlay('project: start play');
+
   VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
 end;
 
@@ -465,7 +486,11 @@ begin
   if not Assigned(VLC_Play) then
     exit;
 
-  VLC_Play.VLC_SetDeinterlaceMode('discard');
+  VLC_Play.VLC_SetDeinterlaceMode('x');
+    ShowMEssage('x');
+
+  VLC_Play.VLC_SetDeinterlaceMode('');
+    ShowMEssage('');
 end;
 
 procedure TFrmMain.Button1Click(Sender: TObject);
@@ -503,7 +528,7 @@ begin
   if not Assigned(VLC_Play) then
     exit;
 
-  VLC_Play.VLC_SetARMode('16:9');
+  VLC_Play.VLC_SetARMode('4:3');
 end;
 
 procedure TFrmMain.Button5Click(Sender: TObject);
@@ -591,14 +616,14 @@ begin
   if not Assigned(VLC_Play) then
     exit;
 
-  VLC_Play.VLC_SetLogo('c:\test.png');
+  VLC_Play.VLC_SetLogo('logo.png');
 end;
 
 procedure TFrmMain.SpinEdit1Change(Sender: TObject);
 begin
   if not Assigned(VLC_Play) then
     exit;
-    
+
   VLC_Play.VLC_SetVolume(SpinEdit1.Value)
 end;
 

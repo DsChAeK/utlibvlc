@@ -1,10 +1,10 @@
 object FrmMain: TFrmMain
-  Left = 234
-  Top = 191
+  Left = 560
+  Top = 189
   BorderStyle = bsSingle
   Caption = 'VLC Testsuite -> demo using one or two vlc instances'
-  ClientHeight = 506
-  ClientWidth = 766
+  ClientHeight = 518
+  ClientWidth = 796
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,12 +16,11 @@ object FrmMain: TFrmMain
   Position = poDefault
   Visible = True
   OnClose = FormClose
-  OnCreate = FormCreate
   OnDblClick = FormDblClick
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 448
+    Left = 496
     Top = 374
     Width = 67
     Height = 13
@@ -29,7 +28,7 @@ object FrmMain: TFrmMain
     Caption = 'Bitrate: 0 kb/s'
   end
   object Label3: TLabel
-    Left = 448
+    Left = 495
     Top = 2
     Width = 63
     Height = 13
@@ -37,7 +36,7 @@ object FrmMain: TFrmMain
     Caption = 'Base Options'
   end
   object Label6: TLabel
-    Left = 448
+    Left = 495
     Top = 173
     Width = 59
     Height = 13
@@ -47,8 +46,8 @@ object FrmMain: TFrmMain
   object pan_Video: TPanel
     Left = 3
     Top = 2
-    Width = 440
-    Height = 231
+    Width = 486
+    Height = 243
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     Color = clBlack
@@ -57,8 +56,8 @@ object FrmMain: TFrmMain
   end
   object Panel1: TPanel
     Left = 2
-    Top = 453
-    Width = 766
+    Top = 465
+    Width = 796
     Height = 53
     Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
@@ -86,6 +85,18 @@ object FrmMain: TFrmMain
       Width = 28
       Height = 13
       Caption = 'Track'
+    end
+    object Label70: TLabel
+      Left = 404
+      Top = 34
+      Width = 37
+      Height = 13
+      Hint = 
+        'choose libvcl.dll yourself if automatic detection doesn'#39't work'#13#10 +
+        '(or force older versions)'
+      Caption = 'libvlc.dll'
+      ParentShowHint = False
+      ShowHint = True
     end
     object BtnInit: TButton
       Left = 3
@@ -176,10 +187,10 @@ object FrmMain: TFrmMain
       Top = 4
       Width = 43
       Height = 22
-      MaxValue = 200
+      MaxValue = 100
       MinValue = 0
       TabOrder = 9
-      Value = 0
+      Value = 50
       OnChange = SpinEdit1Change
     end
     object BtnOpen: TButton
@@ -206,7 +217,7 @@ object FrmMain: TFrmMain
       ParentShowHint = False
       ShowHint = True
       TabOrder = 11
-      Value = 2000
+      Value = 1000
     end
     object Button6: TButton
       Left = 117
@@ -225,55 +236,61 @@ object FrmMain: TFrmMain
       MaxValue = 200
       MinValue = 0
       TabOrder = 13
-      Value = 0
+      Value = 1
       OnChange = SpinEdit2Change
+    end
+    object EdtLibVlc: TEdit
+      Left = 447
+      Top = 29
+      Width = 88
+      Height = 21
+      Hint = 
+        'choose libvcl.dll yourself if automatic detection doesn'#39't work'#13#10 +
+        '(or force older versions)'
+      Color = clActiveBorder
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 14
     end
   end
   object MmoOptBase: TMemo
-    Left = 448
+    Left = 496
     Top = 16
-    Width = 311
+    Width = 293
     Height = 150
     Anchors = [akTop, akRight]
     Lines.Strings = (
       ':sout=#http{mux=ts,dst=192.168.0.3:31339}'
       ':sout-all'
-      ':http-caching=1000'
-      ':udp-caching=250'
-      ':high-priority'
-      ':sout-ts-es-id-pid'
-      ':ts-es-id-pid'
+      ':network-caching=300'
+      ':file-caching=250'
       ':http-reconnect')
     ScrollBars = ssBoth
     TabOrder = 2
     WordWrap = False
   end
   object MmoOptPlay: TMemo
-    Left = 448
+    Left = 496
     Top = 187
-    Width = 309
-    Height = 181
+    Width = 291
+    Height = 150
     Anchors = [akTop, akRight]
     Lines.Strings = (
-      ':deinterlace=1'
-      ':deinterlace-mode=mean'
-      ':vout='
-      ':high-priority'
       ':input-record-path='
-      ':aspect-ratio=default'
-      ':crop=default'
       ':no-fullscreen'
-      ':no-video-title-show'
-      ':http-caching='
-      ':http-reconnect')
+      ':network-caching=300'
+      ':http-reconnect'
+      ':video-filter=deinterlace'
+      ':deinterlace=1'
+      ':deinterlace-mode=yadif')
     ScrollBars = ssBoth
     TabOrder = 3
     WordWrap = False
   end
   object Panel2: TPanel
     Left = 0
-    Top = 236
-    Width = 443
+    Top = 248
+    Width = 489
     Height = 215
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 4
@@ -300,7 +317,7 @@ object FrmMain: TFrmMain
     object MemoPlay: TMemo
       Left = 1
       Top = 81
-      Width = 441
+      Width = 487
       Height = 80
       Align = alTop
       Anchors = [akLeft, akTop, akRight, akBottom]
@@ -319,7 +336,7 @@ object FrmMain: TFrmMain
     object EdtURLBase: TEdit
       Left = 63
       Top = 165
-      Width = 373
+      Width = 294
       Height = 21
       Hint = 
         'plays a url or file and generates (default option!) a http strea' +
@@ -328,12 +345,12 @@ object FrmMain: TFrmMain
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
-      Text = 'http://192.168.0.111:31339/0,0x002C,0x00A3,0x0068,0x006A'
+      Text = 'http://192.168.0.6:31339/0,0x002F,0x00A7,0x0088'
     end
     object EdtUrlPlay: TEdit
       Left = 63
       Top = 189
-      Width = 373
+      Width = 419
       Height = 21
       Hint = 'plays the http stream generated by vlc_base'
       Anchors = [akLeft, akTop, akRight]
@@ -343,7 +360,7 @@ object FrmMain: TFrmMain
     object MemoBase: TMemo
       Left = 1
       Top = 1
-      Width = 441
+      Width = 487
       Height = 80
       Align = alTop
       Anchors = [akLeft, akTop, akRight, akBottom]
@@ -359,11 +376,21 @@ object FrmMain: TFrmMain
       TabOrder = 3
       WordWrap = False
     end
+    object Edit1: TEdit
+      Left = 362
+      Top = 165
+      Width = 120
+      Height = 21
+      Color = clMenu
+      ReadOnly = True
+      TabOrder = 4
+      Text = 'VOX'
+    end
   end
   object Button8: TButton
-    Left = 683
-    Top = 399
-    Width = 75
+    Left = 727
+    Top = 411
+    Width = 66
     Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Set Marquee'
@@ -371,9 +398,9 @@ object FrmMain: TFrmMain
     OnClick = Button8Click
   end
   object BtnFullscreen: TButton
-    Left = 448
-    Top = 399
-    Width = 75
+    Left = 492
+    Top = 411
+    Width = 66
     Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Fullscreen'
@@ -381,9 +408,9 @@ object FrmMain: TFrmMain
     OnClick = BtnFullscreenClick
   end
   object Button7: TButton
-    Left = 448
-    Top = 426
-    Width = 75
+    Left = 492
+    Top = 438
+    Width = 66
     Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'SetLogo'
@@ -391,9 +418,9 @@ object FrmMain: TFrmMain
     OnClick = Button7Click
   end
   object BtnSnapshot: TButton
-    Left = 526
-    Top = 399
-    Width = 75
+    Left = 570
+    Top = 411
+    Width = 66
     Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Snapshot'
@@ -401,9 +428,9 @@ object FrmMain: TFrmMain
     OnClick = BtnSnapshotClick
   end
   object BtnDeinterlace: TButton
-    Left = 526
-    Top = 425
-    Width = 75
+    Left = 570
+    Top = 437
+    Width = 66
     Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Deinterlace'
@@ -411,9 +438,9 @@ object FrmMain: TFrmMain
     OnClick = BtnDeinterlaceClick
   end
   object Button3: TButton
-    Left = 604
-    Top = 399
-    Width = 75
+    Left = 648
+    Top = 411
+    Width = 66
     Height = 21
     Anchors = [akRight, akBottom]
     Caption = 'Crop 4:3'
@@ -421,12 +448,12 @@ object FrmMain: TFrmMain
     OnClick = Button3Click
   end
   object Button4: TButton
-    Left = 604
-    Top = 424
-    Width = 75
+    Left = 648
+    Top = 436
+    Width = 66
     Height = 21
     Anchors = [akRight, akBottom]
-    Caption = 'AR 16:9'
+    Caption = 'AR 4:3'
     TabOrder = 11
     OnClick = Button4Click
   end
