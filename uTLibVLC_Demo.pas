@@ -193,7 +193,7 @@ begin
 
   LogStrPlay('project: start base');
   VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
-  LogStrPlay('project: wait '+IntToStr(EdtDelay.Value)+'s...');
+  LogStrPlay('project: wait '+IntToStr(EdtDelay.Value)+'ms...');
   Delay(EdtDelay.Value);
 
   if not Assigned(VLC_Play) then
@@ -211,40 +211,123 @@ begin
     VLC_Play.Free;
 end;
 
+(*
+function TBoxWindow.VLCInit(var VLC: TLibVLC; Name: String; VideoPanel: TPanel): Boolean;
+var
+  argv : packed array[0..MAX_VLC_ARGS] of AnsiString;
+  args : packed array[0..MAX_VLC_ARGS] of PAnsiChar;
+
+  ArgCount : Integer;
+
+  procedure AddArg(myarg : String);
+  begin
+    argv[ArgCount] := Utf8Encode(myarg);
+    args[ArgCount] := PAnsiChar(argv[ArgCount]);
+    Inc(ArgCount);
+  end;
+
+begin
+  Result := true;
+try
+  ArgCount := 0;
+  FillChar(args, sizeof(args), 0);
+
+  // settings for vlc_play
+  if Assigned(VideoPanel) then begin
+    // vlc snapshot settings
+    AddArg('--snapshot-prefix=dboxtv_');
+    AddArg('--snapshot-sequential');
+    //AddArg('--deinterlace=-1', args);
+    AddArg('--no-video-title-show');
+
+    if Options.VlCWallpaper then
+      AddArg('--video-wallpaper');
+
+    // Output
+    if Options.Mode = mServer then begin
+      AddArg('--vout=disabled');
+    end
+    else begin
+      if Options.VLCOutput = 'default' then
+        AddArg('--vout=')
+      else
+        AddArg(PChar('--vout='+Options.VLCOutput));
+    end;
+  end;
+
+  // High Priority
+  if Options.VlcHighPrio then begin
+    AddArg('--high-priority')
+  end
+  else begin
+    AddArg('--no-high-priority')
+  end;
+
+  AddArg('--sout-ts-es-id-pid');
+  AddArg('--ts-es-id-pid');
+
+  if not Assigned(VideoPanel) then begin
+    AddArg('--vout=dummy');
+    AddArg('--aout=dummy');
+  end;
+
+  AddArg('--deinterlace=1');
+  AddArg('--video-filter=deinterlace');
+  AddArg('--deinterlace-mode=mean');
+
+  // VLC Instanz erzeugen
+  VLC := TLibVLC.Create(Name, Options.VLCLibVlc, args, ArgCount, 3, VideoPanel, nil, nil);
+
+except
+  on E : Exception do begin
+    Result := false;
+    LogStr(LOG_VLC, 'ERROR: VLC_Init('+E.Message+')',0);
+  end;
+end;
+
+end;
+*)
 procedure TFrmMain.PrepareAndStart_Base;
 var
   i : Integer;
-  Params : array[0..25] of PAnsiChar;
+  argv : packed array[0..30] of AnsiString;
+  args : packed array[0..30] of PAnsiChar;
+  ArgCount : Integer;
 
+  procedure AddArg(myarg : String);
+  begin
+    argv[ArgCount] := Utf8Encode(myarg);
+    args[ArgCount] := PAnsiChar(argv[ArgCount]);
+    Inc(ArgCount);
+  end;
 //  Pevent_manager : Plibvlc_event_manager_t;
 begin
-  for i := 0 to 25 do begin
-    Params[i] := '';
-  end;
+  ArgCount := 0;
+  FillChar(args, sizeof(args), 0);
 
   // plugin path
-  Params[0] := PAnsiChar('--plugin-path=./plugins/');
+  AddArg('--plugin-path=./plugins/');
 
   // quiet
-  Params[1] := PAnsiChar('--quiet');
+  AddArg('--quiet');
 
   // keine Ausgabe
-  Params[2] := PAnsiChar('--vout=dummy');
-  Params[3] := PAnsiChar('--aout=dummy');
+  AddArg('--vout=dummy');
+  AddArg('--aout=dummy');
 
   if Assigned(VLC_Base) then begin
     VLC_Base.Free;
   end;
 
   if EdtLibVlc.Text <> '' then begin
-    VLC_Base := TLibVLC.Create('vlc_base', EdtLibVlc.Text, Params, 1, nil, @VlcCallbackBase, nil);
+    VLC_Base := TLibVLC.Create('vlc_base', EdtLibVlc.Text, args, ArgCount, 3, nil, @VlcCallbackBase, nil);
   end
   else begin
     if FileExists('libvlc.dll') then begin
-      VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', Params, 1, nil, @VlcCallbackBase, nil);
+      VLC_Base := TLibVLC.Create('vlc_base', 'libvlc.dll', args, ArgCount, 3, nil, @VlcCallbackBase, nil);
     end
     else
-      VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', Params, 1, nil, @VlcCallbackBase, nil);
+      VLC_Base := TLibVLC.Create('vlc_base', VLC_Base.VLC_GetLibPath+ 'libvlc.dll', args, ArgCount, 3, nil, @VlcCallbackBase, nil);
   end;
 
   VLC_Base.OnLog := OnLogVLCBase;
@@ -255,39 +338,51 @@ end;
 procedure TFrmMain.PrepareAndStart_Play;
 var
   i : Integer;
-  Params : array[0..25] of PAnsiChar;
+  argv : packed array[0..30] of AnsiString;
+  args : packed array[0..30] of PAnsiChar;
+  ArgCount : Integer;
+
+  procedure AddArg(myarg : String);
+  begin
+    argv[ArgCount] := Utf8Encode(myarg);
+    args[ArgCount] := PAnsiChar(argv[ArgCount]);
+    Inc(ArgCount);
+  end;
 begin
 
-  for i := 0 to 25 do begin
-    Params[i] := '';
-  end;
+  ArgCount := 0;
+  FillChar(args, sizeof(args), 0);
+
 
   // plugin path
-  Params[0] := PAnsiChar('--plugin-path=./plugins/');
+  AddArg('--plugin-path=./plugins/');
 
   // quiet
-  Params[1] := PAnsiChar('--quiet');
+  AddArg('--quiet');
 
   // no-video-title-show
-  Params[2] := PAnsiChar('--no-video-title-show');
+  AddArg('--no-video-title-show');
 
   // deinterlace
-  Params[4] := PAnsiChar('--video-filter=deinterlace'); // VLC v2.1.0, 06.04.2012: activates unknown deinterlace mode but not influenced by deinterlace-mode
-  Params[3] := PAnsiChar('--deinterlace-mode=yadif');   // VLC v2.1.0, 06.04.2012: not working right now!
-                                                        
-  // Free
+//  AddArg('--video-filter=deinterlace'); // VLC v2.1.0, 06.04.2012: activates unknown deinterlace mode but not influenced by deinterlace-mode
+//  AddArg('--deinterlace-mode=yadif');   // VLC v2.1.0, 06.04.2012: not working right now!
+
+  AddArg('--sub-filter=logo');
+  AddArg('--sub-filter=marq');
+
+    // Free
   if Assigned(VLC_Play) then begin
     VLC_Play.Free;
   end;
 
   if EdtLibVlc.Text <> '' then begin
-    VLC_Play := TLibVLC.Create('vlc_play', EdtLibVlc.Text, Params, 0, pan_Video, @VlcCallbackBase, nil);
+    VLC_Play := TLibVLC.Create('vlc_play', EdtLibVlc.Text, args, ArgCount, 3, pan_Video, @VlcCallbackBase, nil);
   end
   else begin
     if FileExists('libvlc.dll') then
-      VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', Params, 0, pan_Video, @VlcCallbackPlay, nil)
+      VLC_Play := TLibVLC.Create('vlc_play', 'libvlc.dll', args, ArgCount, 3, pan_Video, @VlcCallbackPlay, nil)
     else
-      VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', Params, 1, pan_Video, @VlcCallbackPlay, nil);
+      VLC_Play := TLibVLC.Create('vlc_play', VLC_Play.VLC_GetLibPath+ 'libvlc.dll', args, ArgCount, 3, pan_Video, @VlcCallbackPlay, nil);
   end;
 
    VLC_Play.OnLog := OnLogVLCPlay;
@@ -397,7 +492,7 @@ begin
 
   LogStrPlay('project: start base');
   VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
-  LogStrPlay('project: wait '+IntToStr(EdtDelay.Value)+'s...');
+  LogStrPlay('project: wait '+IntToStr(EdtDelay.Value)+'ms...');
 
   Delay(EdtDelay.Value);
 
@@ -487,10 +582,10 @@ begin
     exit;
 
   VLC_Play.VLC_SetDeinterlaceMode('x');
-    ShowMEssage('x');
+    ShowMessage('x');
 
   VLC_Play.VLC_SetDeinterlaceMode('');
-    ShowMEssage('');
+    ShowMessage('');
 end;
 
 procedure TFrmMain.Button1Click(Sender: TObject);
@@ -582,8 +677,8 @@ begin
 
   LogStrPlay('project: start base');
   VLC_Base.VLC_PlayMedia(EdtURLBase.Text, TStringList(MmoOptBase.Lines), nil);
-  LogStrPlay('project: wait 2s...');
-  Delay(2000);
+  LogStrPlay('project: wait 1s...');
+  Delay(1000);
 
   LogStrPlay('project: start play');
   VLC_Play.VLC_PlayMedia(EdtURLPlay.Text, TStringList(MmoOptPlay.Lines), nil);
@@ -631,8 +726,8 @@ procedure TFrmMain.Button8Click(Sender: TObject);
 begin
   if not Assigned(VLC_Play) then
     exit;
-                                  // FF0000
-  vlc_play.VLC_SetMarquee('TEST', 16711680, 100, 6, 0, 50, 5000, 50, 50);
+
+  vlc_play.VLC_SetMarquee('TEST', $FF0000, 100, libvlc_position_top_right, 500, 50, 5000, 10, 10);
 end;
 
 procedure TFrmMain.OnLogVLCBase(const log_message: libvlc_log_message_t);

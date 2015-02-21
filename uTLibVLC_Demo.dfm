@@ -17,14 +17,17 @@ object FrmMain: TFrmMain
   Visible = True
   OnClose = FormClose
   OnDblClick = FormDblClick
+  DesignSize = (
+    796
+    518)
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 496
-    Top = 374
+    Left = 495
+    Top = 392
     Width = 67
     Height = 13
-    Anchors = [akTop, akRight]
+    Anchors = [akRight, akBottom]
     Caption = 'Bitrate: 0 kb/s'
   end
   object Label3: TLabel
@@ -217,7 +220,7 @@ object FrmMain: TFrmMain
       ParentShowHint = False
       ShowHint = True
       TabOrder = 11
-      Value = 1000
+      Value = 500
     end
     object Button6: TButton
       Left = 117
@@ -294,6 +297,9 @@ object FrmMain: TFrmMain
     Height = 215
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 4
+    DesignSize = (
+      489
+      215)
     object Label2: TLabel
       Left = 6
       Top = 168
@@ -345,7 +351,7 @@ object FrmMain: TFrmMain
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
-      Text = 'http://192.168.0.6:31339/0,0x002F,0x00A7,0x0088'
+      Text = 'http://192.168.0.111:8001/1:0:1:2F1C:441:1:C00000:0:0:0:'
     end
     object EdtUrlPlay: TEdit
       Left = 63
@@ -458,8 +464,8 @@ object FrmMain: TFrmMain
     OnClick = Button4Click
   end
   object MainMenu1: TMainMenu
-    Left = 489
-    Top = 369
+    Left = 761
+    Top = 345
     object File1: TMenuItem
       Caption = 'File'
       object Close1: TMenuItem
@@ -482,7 +488,7 @@ object FrmMain: TFrmMain
   object Timer1: TTimer
     Interval = 100
     OnTimer = Timer1Timer
-    Left = 459
-    Top = 369
+    Left = 707
+    Top = 345
   end
 end

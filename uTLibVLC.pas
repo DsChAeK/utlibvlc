@@ -28,6 +28,8 @@
 //     04.01.2015, DsChAeK, v2.4 for VLC 2.x Only
 //       -adaptions for Embercado XE6
 //       -new functions:  VLC_GetCropMode,VLC_SetARMode,VLC_SetChannel,VLC_GetChannel
+//       -fixed marquee string
+//       -events are working
 //
 //     03.02.2012, DsChAeK, v2.3 for VLC 2.x Only
 //       -Logging API is deprecated and not working anymore...there is no alternative!
@@ -399,6 +401,30 @@ const
   libvlc_media_option_trusted = $2;
   libvlc_media_option_unique = $100;
 
+  libvlc_position_disable = 0;
+  libvlc_position_center = 1;
+  libvlc_position_left = 2;
+  libvlc_position_right = 3;
+  libvlc_position_top = 4;
+  libvlc_position_top_left = 5;
+  libvlc_position_top_right = 6;
+  libvlc_position_bottom = 7;
+  libvlc_position_bottom_left = 8;
+  libvlc_position_bottom_right = 9;
+
+  libvlc_position : array[0..9] of Integer = (
+    libvlc_position_disable,
+    libvlc_position_center,
+    libvlc_position_left,
+    libvlc_position_right,
+    libvlc_position_top,
+    libvlc_position_top_left,
+    libvlc_position_top_right,
+    libvlc_position_bottom,
+    libvlc_position_bottom_left,
+    libvlc_position_bottom_right
+  );
+
 type
   libvlc_video_marquee_option_t = (
     libvlc_marquee_Enabled,
@@ -764,7 +790,6 @@ type
       procedure VLC_AdjustVideo(Contrast: Double; Brightness : Double; Hue : Integer; Saturation : Double; Gamma : Double);
       procedure VLC_ResetVideo();
       procedure VLC_SetMarquee(Text : String; Color, Opac, Pos, Refresh, Size, Timeout, X, Y : Integer);
-
       procedure VLC_SetLogo(LogoFile : string);
 
       // properties
@@ -1875,7 +1900,7 @@ end;
 
 procedure TLibVLC.VLC_SetLogo(LogoFile: string);
 begin
-   libvlc_video_set_logo_string(FPlayer,libvlc_logo_file,PAnsiChar(LogoFile));
+   libvlc_video_set_logo_string(FPlayer,libvlc_logo_file,PAnsiChar(AnsiString(LogoFile)));
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_x,0);
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_y,0);
    libvlc_video_set_logo_int(FPlayer,libvlc_logo_repeat,-1); // continuous?
@@ -1966,14 +1991,14 @@ begin
     Result := Result + IntToStr(Track.i_id)+' '+Track.psz_name+ChrCRLF;
     Track := Track.p_next;
   until not Assigned(Track);
-  
+
 end;
 
 procedure TLibVLC.VLC_SetMarquee(Text: String; Color, Opac, Pos, Refresh, Size, Timeout, X, Y: Integer);
 // set marquee text
 begin
   // options
-  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Enabled, 1);
+  libvlc_video_set_marquee_string(FPlayer, libvlc_marquee_Text, PAnsiChar(AnsiString(Text)));
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Color, Color);
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Opacity, Opac);
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Position, Pos);
@@ -1983,8 +2008,7 @@ begin
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_X, X);
   libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Y, Y);
 
-  libvlc_video_set_marquee_string(FPlayer, libvlc_marquee_Text, PAnsiChar(Text));
-
+  libvlc_video_set_marquee_int(FPlayer, libvlc_marquee_Enabled, 1);
 end;
 
 function TLibVLC.VLC_GetMute: Boolean;
